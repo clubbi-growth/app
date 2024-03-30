@@ -1,30 +1,30 @@
 # %%  Imports
 
-import json
-from math import sqrt 
-import pandas as pd
-import numpy as np  
-from sklearn.linear_model import Lasso  
-from feature_engine.creation import CyclicalFeatures 
-from feature_engine.datetime import DatetimeFeatures
-from feature_engine.imputation import DropMissingData
-from feature_engine.selection import DropFeatures  
-from feature_engine.timeseries.forecasting import (LagFeatures,WindowFeatures,)
-from sklearn.pipeline import Pipeline
-from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error, mean_absolute_percentage_error
-from statsmodels.tools.eval_measures import rmse
-import prophet
-from prophet.plot import plot_plotly, plot_components_plotly 
-import matplotlib.pyplot as plt 
-import seaborn as sns
-from statsmodels.tsa.seasonal import STL
-from scipy.interpolate import interp1d
+# import json
+# from math import sqrt 
+# import pandas as pd
+# import numpy as np  
+# from sklearn.linear_model import Lasso  
+# from feature_engine.creation import CyclicalFeatures 
+# from feature_engine.datetime import DatetimeFeatures
+# from feature_engine.imputation import DropMissingData
+# from feature_engine.selection import DropFeatures  
+# from feature_engine.timeseries.forecasting import (LagFeatures,WindowFeatures,)
+# from sklearn.pipeline import Pipeline
+# from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error, mean_absolute_percentage_error
+# from statsmodels.tools.eval_measures import rmse
+# import prophet
+# from prophet.plot import plot_plotly, plot_components_plotly 
+# import matplotlib.pyplot as plt 
+# import seaborn as sns
+# from statsmodels.tsa.seasonal import STL
+# from scipy.interpolate import interp1d
 
 # Imports Streamlit 
 
 import streamlit as st
 import altair as alt
-import plotly.express as px
+#import plotly.express as px
  
 
 
@@ -38,8 +38,8 @@ st.set_page_config(
 
 alt.themes.enable("dark")
  
-df = pd.read_excel('C:/Users/leona/Área de Trabalho/Prophet/Clientes/Clientes.xlsx')
-df['Ano'] = df['Data'].dt.year 
+#df = pd.read_excel('C:/Users/leona/Área de Trabalho/Prophet/Clientes/Clientes.xlsx')
+#df['Ano'] = df['Data'].dt.year 
  
 
 #df['Data'] = df['DataHour'].dt.date     
@@ -50,11 +50,12 @@ df['Ano'] = df['Data'].dt.year
 with st.sidebar:
     st.title('🏂 US Population Dashboard')
     
-    year_list = list(df.Ano.unique())[::-1]
+    year_list = [2021,2022,2023]
+    #list(df.Ano.unique())[::-1]
     
     selected_year = st.selectbox('Select a year', year_list)
-    df_selected_year = df[df.Ano == selected_year]
-    df_selected_year_sorted = df_selected_year.sort_values(by="Ano", ascending=False)
+  #  df_selected_year = df[df.Ano == selected_year]
+  #  df_selected_year_sorted = df_selected_year.sort_values(by="Ano", ascending=False)
 
     color_theme_list = ['blues', 'cividis', 'greens', 'inferno', 'magma', 'plasma', 'reds', 'rainbow', 'turbo', 'viridis']
     selected_color_theme = st.selectbox('Select a color theme', color_theme_list)
