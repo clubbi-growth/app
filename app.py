@@ -40,7 +40,7 @@ cursor: redshift_connector.Cursor = conn.cursor()
 query =  '''select * from public.trafego_site_hours where datas>='2024-03-15' '''
 cursor.execute(query)
 df_trafego_query: pd.DataFrame = cursor.fetch_dataframe() 
-df_trafego_query
+
 
 # %%
 
@@ -75,32 +75,34 @@ with st.sidebar:
     selected_color_theme = st.selectbox('Select a color theme', color_theme_list)
 
 
+with st.container():
+    df_trafego_query
 
-col = st.columns((1.5, 4.5, 2), gap='medium')
-with col[0]:
-    st.markdown('#### Gains/Losses')
+# col = st.columns((1.5, 4.5, 2), gap='medium')
+# with col[0]:
+#     st.markdown('#### Gains/Losses')
  
-    st.metric(label='last_state_name', value='last_state_population', delta='last_state_delta')
+#     st.metric(label='last_state_name', value='last_state_population', delta='last_state_delta')
 
     
-    st.markdown('#### States Migration') 
+#     st.markdown('#### States Migration') 
 
-    migrations_col = st.columns((0.2, 1, 0.2))
-    with migrations_col[1]:
-        st.write('Inbound') 
-        st.write('Outbound') 
+#     migrations_col = st.columns((0.2, 1, 0.2))
+#     with migrations_col[1]:
+#         st.write('Inbound') 
+#         st.write('Outbound') 
 
-with col[1]:
-    st.markdown('#### Total Population')
-     
+# with col[1]:
+#     st.markdown('#### Total Population')
+#     df_trafego_query
 
-with col[2]:
-    st.markdown('#### Top States')
+# with col[2]:
+#     st.markdown('#### Top States')
  
     
-    with st.expander('About', expanded=True):
-        st.write('''
-            - Data: [U.S. Census Bureau](https://www.census.gov/data/datasets/time-series/demo/popest/2010s-state-total.html).
-            - :orange[**Gains/Losses**]: states with high inbound/ outbound migration for selected year
-            - :orange[**States Migration**]: percentage of states with annual inbound/ outbound migration > 50,000
-            ''')
+#     with st.expander('About', expanded=True):
+#         st.write('''
+#             - Data: [U.S. Census Bureau](https://www.census.gov/data/datasets/time-series/demo/popest/2010s-state-total.html).
+#             - :orange[**Gains/Losses**]: states with high inbound/ outbound migration for selected year
+#             - :orange[**States Migration**]: percentage of states with annual inbound/ outbound migration > 50,000
+#             ''')
