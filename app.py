@@ -24,9 +24,23 @@
 
 import streamlit as st
 import altair as alt
+import pandas as pd
 #import plotly.express as px
  
 
+import redshift_connector
+
+conn = redshift_connector.connect(
+    host='redshift-analytics-cluster-1.c8ccslr41yjs.us-east-1.redshift.amazonaws.com',
+    database='dev',
+    user='pbi_user',
+    password='4cL6z0E7wiBpAjNRlqKkFiLW'
+)
+cursor: redshift_connector.Cursor = conn.cursor()
+query =  '''select * from public.trafego_site_hours where datas>='2024-03-15' '''
+cursor.execute(query)
+df_trafego_query: pd.DataFrame = cursor.fetch_dataframe() 
+df_trafego_query
 
 # %%
 
