@@ -25,11 +25,7 @@
 import streamlit as st
 import altair as alt
 import pandas as pd
-#import plotly.express as px
- 
-import os
-from requirements_detector import find_requirements
-print(find_requirements(os.getcwd()))
+#import plotly.express as px 
 
 import redshift_connector
 
