@@ -133,6 +133,7 @@ alt.themes.enable("dark")
 
 # %%
 
+df =   query_orders
 
 with st.sidebar:
     st.title('🏂 US Population Dashboard')
@@ -151,7 +152,7 @@ with st.sidebar:
 with st.container():
     
    # query_produtos
-    query_orders 
+    df 
 
 # col = st.columns((1.5, 4.5, 2), gap='medium')
 # with col[0]:
