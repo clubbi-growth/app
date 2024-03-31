@@ -111,7 +111,7 @@ mydb =  connection.connect(
 )
 
 query_produtos = pd.read_sql(query_produtos,mydb) 
-#query_orders = pd.read_sql(query_order,mydb) 
+query_orders = pd.read_sql(query_order,mydb) 
 
 mydb.close() #close the connection
 
@@ -151,7 +151,7 @@ with st.sidebar:
 with st.container():
     
     query_produtos
-    #.head(100)
+    query_orders-.head(100)
 
 # col = st.columns((1.5, 4.5, 2), gap='medium')
 # with col[0]:
