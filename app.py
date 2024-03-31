@@ -27,6 +27,9 @@ import altair as alt
 import pandas as pd
 #import plotly.express as px
  
+import os
+from requirements_detector import find_requirements
+print(find_requirements(os.getcwd()))
 
 import redshift_connector
 
@@ -40,6 +43,7 @@ cursor: redshift_connector.Cursor = conn.cursor()
 query =  '''select * from public.trafego_site_hours where datas>='2024-03-15' '''
 cursor.execute(query)
 df_trafego_query: pd.DataFrame = cursor.fetch_dataframe() 
+
 
 
 # %%
@@ -76,7 +80,7 @@ with st.sidebar:
 
 
 with st.container():
-    df_trafego_query
+    df_trafego_query.head(100)
 
 # col = st.columns((1.5, 4.5, 2), gap='medium')
 # with col[0]:
