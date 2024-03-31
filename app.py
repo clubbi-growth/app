@@ -150,7 +150,7 @@ with st.sidebar:
 
 with st.container():
     
-    query_produtos
+   # query_produtos
     query_orders.head(100)
 
 # col = st.columns((1.5, 4.5, 2), gap='medium')
