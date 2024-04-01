@@ -104,16 +104,16 @@ and DATE(ord.order_datetime) < '2025-03-01'  \
 query_produtos  = "select convert(prod.ean,char) as ean ,prod.description,prod.category_id, prod.unit_ean, prod.only_sell_package, cat.category as Categoria, cat.section  from clubbi.product prod left join clubbi.category cat on cat.id = prod.category_id ;"
 
 
-mydb =  connection.connect(
-    host="aurora-mysql-db.cluster-ro-cjcocankcwqi.us-east-1.rds.amazonaws.com",
-    user="ops-excellence-ro",
-    password="L5!jj@Jm#9J+9K"
-)
+#mydb =  connection.connect(
+#    host="aurora-mysql-db.cluster-ro-cjcocankcwqi.us-east-1.rds.amazonaws.com",
+#    user="ops-excellence-ro",
+#    password="L5!jj@Jm#9J+9K"
+#)
 
-query_produtos = pd.read_sql(query_produtos,mydb) 
-query_orders = pd.read_sql(query_order,mydb) 
+#query_produtos = pd.read_sql(query_produtos,mydb) 
+#query_orders = pd.read_sql(query_order,mydb) 
 
-mydb.close() #close the connection
+#mydb.close() #close the connection
 
 # %%
 
@@ -133,7 +133,7 @@ alt.themes.enable("dark")
 
 # %%
 
-df =   query_orders
+#df =   query_orders
 
 with st.sidebar:
     st.title('🏂 US Population Dashboard')
@@ -152,8 +152,8 @@ with st.sidebar:
 with st.container():
     
    # query_produtos
-    df 
-
+    #df 
+    print("Hello World")
 # col = st.columns((1.5, 4.5, 2), gap='medium')
 # with col[0]:
 #     st.markdown('#### Gains/Losses')
