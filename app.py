@@ -1,12 +1,122 @@
-#######################
-# Import libraries
-import streamlit as st
-import pandas as pd
-import altair as alt
-import plotly.express as px
+# %%  Imports
 
-#######################
-# Page configuration
+# import json
+# from math import sqrt 
+# import pandas as pd
+# import numpy as np  
+# from sklearn.linear_model import Lasso  
+# from feature_engine.creation import CyclicalFeatures 
+# from feature_engine.datetime import DatetimeFeatures
+# from feature_engine.imputation import DropMissingData
+# from feature_engine.selection import DropFeatures  
+# from feature_engine.timeseries.forecasting import (LagFeatures,WindowFeatures,)
+# from sklearn.pipeline import Pipeline
+# from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error, mean_absolute_percentage_error
+# from statsmodels.tools.eval_measures import rmse
+# import prophet
+# from prophet.plot import plot_plotly, plot_components_plotly 
+# import matplotlib.pyplot as plt 
+# import seaborn as sns
+# from statsmodels.tsa.seasonal import STL
+# from scipy.interpolate import interp1d
+
+# Imports Streamlit 
+
+import streamlit as st
+import altair as alt
+import pandas as pd
+
+import mysql.connector as connection
+
+#import plotly.express as px 
+
+# import redshift_connector
+
+# conn = redshift_connector.connect(
+#     host='redshift-analytics-cluster-1.c8ccslr41yjs.us-east-1.redshift.amazonaws.com',
+#     database='dev',
+#     user='pbi_user',
+#     password='4cL6z0E7wiBpAjNRlqKkFiLW'
+# )
+# cursor: redshift_connector.Cursor = conn.cursor()
+# query =  '''select * from public.trafego_site_hours where datas>='2024-03-15' '''
+# cursor.execute(query)
+# df_trafego_query: pd.DataFrame = cursor.fetch_dataframe() 
+
+query_order  = "select \
+DATE_FORMAT(ord.order_datetime,'%Y-%m-%d %H:00:00') as DateHour,\
+Date(ord.order_datetime) as Data,\
+HOUR(ord.order_datetime) as Hora,\
+CONVERT(ord.id, char) as order_id,\
+CONVERT(ord_ite.id, char) as order_item_id,\
+ord.customer_id, \
+ord.region_id, \
+CASE WHEN cli.region_id in (1,7,19,27,28,29,30,31,36,37)  THEN 'RJC' \
+WHEN cli.region_id in (22,24,25) THEN 'RJI' \
+WHEN cli.region_id in (16,26,49,50,51,52,53) THEN 'BAC' ELSE ord.region_id END as 'Região',\
+ord_ite.store_id, \
+CONVERT(ord_ite.product_id, CHAR) as ean,\
+CONVERT(ord_ite.unit_product_id, CHAR) as unit_ean,\
+prod.description as Produto,\
+ord_ite.category as Categoria,\
+ord_ite.is_multi_package,\
+ord_ite.product_package_qtd,\
+ord_ite.price_managers,\
+Convert(ord_ite.offer_id, char) as offer_id,  \
+case when ord_ite.original_price > ord_ite.unit_price then 1 else 0 end as flag_desconto,\
+case when  ord_ite.is_multi_package = 0 then  COALESCE(ord_ite.original_price,ord_ite.unit_price) else COALESCE(ord_ite.original_price,ord_ite.unit_price)/ ord_ite.product_package_qtd  end as Original_Price, \
+case when  ord_ite.is_multi_package = 0 then  ord_ite.unit_price else  ord_ite.unit_price/ ord_ite.product_package_qtd  end as Price, \
+case when ord_ite.original_price > ord_ite.unit_price then \
+case when  ord_ite.is_multi_package = 0 then  COALESCE(ord_ite.original_price,ord_ite.unit_price) else COALESCE(ord_ite.original_price,ord_ite.unit_price)/ ord_ite.product_package_qtd end - \
+case when  ord_ite.is_multi_package = 0 then  ord_ite.unit_price else  ord_ite.unit_price/ ord_ite.product_package_qtd  end \
+else 0 end as desconto_unitario, \
+case when ord_ite.original_price > ord_ite.unit_price then \
+(case when  ord_ite.is_multi_package = 0 then  COALESCE(ord_ite.original_price,ord_ite.unit_price) else COALESCE(ord_ite.original_price,ord_ite.unit_price)/ ord_ite.product_package_qtd end - \
+case when  ord_ite.is_multi_package = 0 then  ord_ite.unit_price else  ord_ite.unit_price/ ord_ite.product_package_qtd  end ) * \
+case \
+when ord_ite.product_package_qtd  is null then ord_ite.quantity \
+when ord_ite.product_package_qtd  <=0 then ord_ite.quantity \
+else ord_ite.product_package_qtd  * ord_ite.quantity end \
+else 0 end as desconto_total, \
+case \
+when ord_ite.product_package_qtd  is null then ord_ite.quantity \
+when ord_ite.product_package_qtd  <=0 then ord_ite.quantity \
+else ord_ite.product_package_qtd  * ord_ite.quantity end as Quantity, \
+ord_ite.quantity *  \
+(CASE WHEN prod.gross_weight_in_gram IS NOT NULL THEN prod.gross_weight_in_gram  WHEN prod.net_volume_in_liters IS NOT NULL AND cat.gross_weight_per_content_volume_liter IS NOT NULL THEN COALESCE(prod.number_of_items, 1) * prod.net_volume_in_liters * cat.gross_weight_per_content_volume_liter  \
+WHEN prod.net_weight_in_gram IS NOT NULL AND cat.gross_weight_per_net_weight_gram IS NOT NULL THEN COALESCE(prod.number_of_items, 1) * prod.net_weight_in_gram * cat.gross_weight_per_net_weight_gram  \
+WHEN cat.category_id IS NOT NULL THEN COALESCE(cat.average_without_outliers, cat.average) * COALESCE(prod.number_of_items, 1)  \
+WHEN prod.net_weight_in_gram IS NOT NULL THEN prod.net_weight_in_gram  \
+WHEN prod.net_volume_in_liters IS NOT NULL THEN prod.net_volume_in_liters * 1000 ELSE 1000  END) / 1000.0 as 'Peso',\
+ord_ite.total_price  as 'Gmv' \
+from  clubbi_backend.order ord \
+left join clubbi_backend.order_item ord_ite on ord_ite.order_id = ord.id and (ord_ite.is_cancelled = 0 or ord_ite.is_cancelled IS NULL) \
+left join clubbi.product prod ON ord_ite.product_id = prod.ean \
+left join  clubbi.merchants  cli on cli.client_site_code = ord.customer_id \
+left join clubbi.category_volume cat ON prod.category_id = cat.category_id  \
+where    \
+1 = 1 \
+and DATE(ord.order_datetime) >= '2024-03-01' \
+and DATE(ord.order_datetime) < '2025-03-01'  \
+;"\
+
+
+query_produtos  = "select convert(prod.ean,char) as ean ,prod.description,prod.category_id, prod.unit_ean, prod.only_sell_package, cat.category as Categoria, cat.section  from clubbi.product prod left join clubbi.category cat on cat.id = prod.category_id ;"
+
+
+mydb =  connection.connect(
+    host="aurora-mysql-db.cluster-ro-cjcocankcwqi.us-east-1.rds.amazonaws.com",
+    user="ops-excellence-ro",
+    password="L5!jj@Jm#9J+9K"
+)
+
+query_produtos = pd.read_sql(query_produtos,mydb) 
+query_orders = pd.read_sql(query_order,mydb) 
+
+mydb.close() #close the connection
+
+# %%
+
 st.set_page_config(
     page_title="US Population Dashboard",
     page_icon="🏂",
@@ -14,260 +124,61 @@ st.set_page_config(
     initial_sidebar_state="expanded")
 
 alt.themes.enable("dark")
+ 
+#df = pd.read_excel('C:/Users/leona/Área de Trabalho/Prophet/Clientes/Clientes.xlsx')
+#df['Ano'] = df['Data'].dt.year 
+ 
 
-#######################
-# CSS styling
-st.markdown("""
-<style>
+#df['Data'] = df['DataHour'].dt.date     
 
-[data-testid="block-container"] {
-    padding-left: 2rem;
-    padding-right: 2rem;
-    padding-top: 1rem;
-    padding-bottom: 0rem;
-    margin-bottom: -7rem;
-}
+# %%
 
-[data-testid="stVerticalBlock"] {
-    padding-left: 0rem;
-    padding-right: 0rem;
-}
+df =   query_orders
 
-[data-testid="stMetric"] {
-    background-color: #393939;
-    text-align: center;
-    padding: 15px 0;
-}
-
-[data-testid="stMetricLabel"] {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-[data-testid="stMetricDeltaIcon-Up"] {
-    position: relative;
-    left: 38%;
-    -webkit-transform: translateX(-50%);
-    -ms-transform: translateX(-50%);
-    transform: translateX(-50%);
-}
-
-[data-testid="stMetricDeltaIcon-Down"] {
-    position: relative;
-    left: 38%;
-    -webkit-transform: translateX(-50%);
-    -ms-transform: translateX(-50%);
-    transform: translateX(-50%);
-}
-
-</style>
-""", unsafe_allow_html=True)
-
-#######################
-# Load data
-df_reshaped = pd.read_csv('data/us-population-2010-2019-reshaped.csv')
-
-#######################
-# Sidebar
 with st.sidebar:
     st.title('🏂 US Population Dashboard')
     
-    year_list = list(df_reshaped.year.unique())[::-1]
+    year_list = [2021,2022,2023]
+    #list(df.Ano.unique())[::-1]
     
     selected_year = st.selectbox('Select a year', year_list)
-    df_selected_year = df_reshaped[df_reshaped.year == selected_year]
-    df_selected_year_sorted = df_selected_year.sort_values(by="population", ascending=False)
+  #  df_selected_year = df[df.Ano == selected_year]
+  #  df_selected_year_sorted = df_selected_year.sort_values(by="Ano", ascending=False)
 
     color_theme_list = ['blues', 'cividis', 'greens', 'inferno', 'magma', 'plasma', 'reds', 'rainbow', 'turbo', 'viridis']
     selected_color_theme = st.selectbox('Select a color theme', color_theme_list)
 
-#######################
-# Plots
 
-# Heatmap
-def make_heatmap(input_df, input_y, input_x, input_color, input_color_theme):
-    heatmap = alt.Chart(input_df).mark_rect().encode(
-            y=alt.Y(f'{input_y}:O', axis=alt.Axis(title="Year", titleFontSize=18, titlePadding=15, titleFontWeight=900, labelAngle=0)),
-            x=alt.X(f'{input_x}:O', axis=alt.Axis(title="", titleFontSize=18, titlePadding=15, titleFontWeight=900)),
-            color=alt.Color(f'max({input_color}):Q',
-                             legend=None,
-                             scale=alt.Scale(scheme=input_color_theme)),
-            stroke=alt.value('black'),
-            strokeWidth=alt.value(0.25),
-        ).properties(width=900
-        ).configure_axis(
-        labelFontSize=12,
-        titleFontSize=12
-        ) 
-    # height=300
-    return heatmap
-
-# Choropleth map
-def make_choropleth(input_df, input_id, input_column, input_color_theme):
-    choropleth = px.choropleth(input_df, locations=input_id, color=input_column, locationmode="USA-states",
-                               color_continuous_scale=input_color_theme,
-                               range_color=(0, max(df_selected_year.population)),
-                               scope="usa",
-                               labels={'population':'Population'}
-                              )
-    choropleth.update_layout(
-        template='plotly_dark',
-        plot_bgcolor='rgba(0, 0, 0, 0)',
-        paper_bgcolor='rgba(0, 0, 0, 0)',
-        margin=dict(l=0, r=0, t=0, b=0),
-        height=350
-    )
-    return choropleth
-
-# Donut chart
-def make_donut(input_response, input_text, input_color):
-  if input_color == 'blue':
-      chart_color = ['#29b5e8', '#155F7A']
-  if input_color == 'green':
-      chart_color = ['#27AE60', '#12783D']
-  if input_color == 'orange':
-      chart_color = ['#F39C12', '#875A12']
-  if input_color == 'red':
-      chart_color = ['#E74C3C', '#781F16']
+with st.container():
     
-  source = pd.DataFrame({
-      "Topic": ['', input_text],
-      "% value": [100-input_response, input_response]
-  })
-  source_bg = pd.DataFrame({
-      "Topic": ['', input_text],
-      "% value": [100, 0]
-  })
-    
-  plot = alt.Chart(source).mark_arc(innerRadius=45, cornerRadius=25).encode(
-      theta="% value",
-      color= alt.Color("Topic:N",
-                      scale=alt.Scale(
-                          #domain=['A', 'B'],
-                          domain=[input_text, ''],
-                          # range=['#29b5e8', '#155F7A']),  # 31333F
-                          range=chart_color),
-                      legend=None),
-  ).properties(width=130, height=130)
-    
-  text = plot.mark_text(align='center', color="#29b5e8", font="Lato", fontSize=32, fontWeight=700, fontStyle="italic").encode(text=alt.value(f'{input_response} %'))
-  plot_bg = alt.Chart(source_bg).mark_arc(innerRadius=45, cornerRadius=20).encode(
-      theta="% value",
-      color= alt.Color("Topic:N",
-                      scale=alt.Scale(
-                          # domain=['A', 'B'],
-                          domain=[input_text, ''],
-                          range=chart_color),  # 31333F
-                      legend=None),
-  ).properties(width=130, height=130)
-  return plot_bg + plot + text
+   # query_produtos
+    df 
 
-# Convert population to text 
-def format_number(num):
-    if num > 1000000:
-        if not num % 1000000:
-            return f'{num // 1000000} M'
-        return f'{round(num / 1000000, 1)} M'
-    return f'{num // 1000} K'
-
-# Calculation year-over-year population migrations
-def calculate_population_difference(input_df, input_year):
-  selected_year_data = input_df[input_df['year'] == input_year].reset_index()
-  previous_year_data = input_df[input_df['year'] == input_year - 1].reset_index()
-  selected_year_data['population_difference'] = selected_year_data.population.sub(previous_year_data.population, fill_value=0)
-  return pd.concat([selected_year_data.states, selected_year_data.id, selected_year_data.population, selected_year_data.population_difference], axis=1).sort_values(by="population_difference", ascending=False)
-
-#######################
-# Dashboard Main Panel
-col = st.columns((1.5, 4.5, 2), gap='medium')
-
-with col[0]:
-    st.markdown('#### Gains/Losses')
-
-    df_population_difference_sorted = calculate_population_difference(df_reshaped, selected_year)
-
-    if selected_year > 2010:
-        first_state_name = df_population_difference_sorted.states.iloc[0]
-        first_state_population = format_number(df_population_difference_sorted.population.iloc[0])
-        first_state_delta = format_number(df_population_difference_sorted.population_difference.iloc[0])
-    else:
-        first_state_name = '-'
-        first_state_population = '-'
-        first_state_delta = ''
-    st.metric(label=first_state_name, value=first_state_population, delta=first_state_delta)
-
-    if selected_year > 2010:
-        last_state_name = df_population_difference_sorted.states.iloc[-1]
-        last_state_population = format_number(df_population_difference_sorted.population.iloc[-1])   
-        last_state_delta = format_number(df_population_difference_sorted.population_difference.iloc[-1])   
-    else:
-        last_state_name = '-'
-        last_state_population = '-'
-        last_state_delta = ''
-    st.metric(label=last_state_name, value=last_state_population, delta=last_state_delta)
+# col = st.columns((1.5, 4.5, 2), gap='medium')
+# with col[0]:
+#     st.markdown('#### Gains/Losses')
+ 
+#     st.metric(label='last_state_name', value='last_state_population', delta='last_state_delta')
 
     
-    st.markdown('#### States Migration')
+#     st.markdown('#### States Migration') 
 
-    if selected_year > 2010:
-        # Filter states with population difference > 50000
-        # df_greater_50000 = df_population_difference_sorted[df_population_difference_sorted.population_difference_absolute > 50000]
-        df_greater_50000 = df_population_difference_sorted[df_population_difference_sorted.population_difference > 50000]
-        df_less_50000 = df_population_difference_sorted[df_population_difference_sorted.population_difference < -50000]
-        
-        # % of States with population difference > 50000
-        states_migration_greater = round((len(df_greater_50000)/df_population_difference_sorted.states.nunique())*100)
-        states_migration_less = round((len(df_less_50000)/df_population_difference_sorted.states.nunique())*100)
-        donut_chart_greater = make_donut(states_migration_greater, 'Inbound Migration', 'green')
-        donut_chart_less = make_donut(states_migration_less, 'Outbound Migration', 'red')
-    else:
-        states_migration_greater = 0
-        states_migration_less = 0
-        donut_chart_greater = make_donut(states_migration_greater, 'Inbound Migration', 'green')
-        donut_chart_less = make_donut(states_migration_less, 'Outbound Migration', 'red')
+#     migrations_col = st.columns((0.2, 1, 0.2))
+#     with migrations_col[1]:
+#         st.write('Inbound') 
+#         st.write('Outbound') 
 
-    migrations_col = st.columns((0.2, 1, 0.2))
-    with migrations_col[1]:
-        st.write('Inbound')
-        st.altair_chart(donut_chart_greater)
-        st.write('Outbound')
-        st.altair_chart(donut_chart_less)
+# with col[1]:
+#     st.markdown('#### Total Population')
+#     df_trafego_query
 
-with col[1]:
-    st.markdown('#### Total Population')
+# with col[2]:
+#     st.markdown('#### Top States')
+ 
     
-    choropleth = make_choropleth(df_selected_year, 'states_code', 'population', selected_color_theme)
-    st.plotly_chart(choropleth, use_container_width=True)
-    
-    heatmap = make_heatmap(df_reshaped, 'year', 'states', 'population', selected_color_theme)
-    st.altair_chart(heatmap, use_container_width=True)
-    
-
-with col[2]:
-    st.markdown('#### Top States')
-
-    st.dataframe(df_selected_year_sorted,
-                 column_order=("states", "population"),
-                 hide_index=True,
-                 width=None,
-                 column_config={
-                    "states": st.column_config.TextColumn(
-                        "States",
-                    ),
-                    "population": st.column_config.ProgressColumn(
-                        "Population",
-                        format="%f",
-                        min_value=0,
-                        max_value=max(df_selected_year_sorted.population),
-                     )}
-                 )
-    
-    with st.expander('About', expanded=True):
-        st.write('''
-            - Data: [U.S. Census Bureau](https://www.census.gov/data/datasets/time-series/demo/popest/2010s-state-total.html).
-            - :orange[**Gains/Losses**]: states with high inbound/ outbound migration for selected year
-            - :orange[**States Migration**]: percentage of states with annual inbound/ outbound migration > 50,000
-            ''')
-
-
+#     with st.expander('About', expanded=True):
+#         st.write('''
+#             - Data: [U.S. Census Bureau](https://www.census.gov/data/datasets/time-series/demo/popest/2010s-state-total.html).
+#             - :orange[**Gains/Losses**]: states with high inbound/ outbound migration for selected year
+#             - :orange[**States Migration**]: percentage of states with annual inbound/ outbound migration > 50,000
+#             ''')
