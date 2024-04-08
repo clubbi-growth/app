@@ -56,10 +56,11 @@ alt.themes.enable("dark")
 
 st.set_page_config(
     page_title="Data Growth App",
-    page_icon=icon,
+  #  page_icon=icon,
     layout="wide",
 #    initial_sidebar_state="expanded")
-    initial_sidebar_state="collapsed")
+    initial_sidebar_state="collapsed"
+)
 
 
 # %%  My Sql 
