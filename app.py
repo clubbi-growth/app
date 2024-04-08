@@ -506,7 +506,7 @@ print(f"Hora: {hora_formatada}")
 
 # %% Trafego Produtos D0
 # Trafego Produtos 
-print("Tradego Produtos")
+print("Trafego Produtos")
 
 
 query_trafego_produtos_d_1 =  '''select  date_trunc('day', event_date::date )::date as datas, date_trunc('hour',(TIMESTAMP 'epoch' + event_timestamp / 1000000 * INTERVAL '1 second')::timestamptz  - interval '3 hour') as datetimes, extract(hour from datetimes) as hora, event_user_id as user_id,  event_ean, count(distinct case when event_name = 'searchProducts' then event_user_id else null end) as search_products, count(distinct case when event_name = 'addToCart' then event_user_id else null end) as add_to_cart, count(distinct case when event_name = 'checkout' then event_user_id else null end) as checkout FROM ga4.events_data  where event_date >= (DATEADD(day,-100,CURRENT_DATE)) and event_ean in ('7891910000197','7891107101621','7896894900013','7896036090244','7896109801005','7896079500151','7896183202187','7898080640611','7898080640611','7896079500151','7891149104109','7898215151708','7896256600223','7896223709423','7896183202187','7893500020110','7898215151708','7896401100097','7896089011982','7896089012019','7896332007380','7898080640413','7891149011001','7896332007359','7898915949193','7896024761651','78936683','7896401100332','7896024760357','7898215151784','7622210565563','7891991009164','7898080640222','7891149440801','7894321722016','7891149102808','7891021006125','7891000100103','7891152802054','7896046900236','7894900027020','7894900027013','78912939','7896081800010','7896024722324','7898215157403') group by 1,2,3,4,5  '''
@@ -704,7 +704,8 @@ def cria_df_view(df_datetime,df_users, df_trafego,df_orders,min_date,max_date,we
     return df_vendas 
 
 # %% Função Categoria
- 
+# Função Categoria
+print("Função Categoria")
 def cria_df_view_categoria(df_datetime,df_users, df_trafego,df_orders,min_date,max_date,weekday_list,hora_list, region_id_list,regiao_list,size_list,categoria_list,ean_lista):
      
     df_datetime = df_datetime[df_datetime['DateHour']>=  min_date ]
@@ -934,22 +935,17 @@ def cria_df_view_categoria(df_datetime,df_users, df_trafego,df_orders,min_date,m
  
 
 # %%  Load View Geral
-
-
-
+# Load View Geral
+print("Load View Geral") 
 @st.cache_resource( ttl = 1600) # ttl = 30 Minutos = 60 segundos x 30 = 1800 segundos  
 def load_view():
 
     data = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),['Weekday'],['Hora'] , ['region_id'], ['Região'], ['size'],['categoria'],['ean'])
 
     return data
-
  
 
-
-df_view = load_view()  
-
- 
+df_view = load_view()   
 
 year_list = list(df_view.Ano.unique())[::-1]
 month_list = list(df_view.Mês.unique())[::-1]
@@ -964,146 +960,4 @@ size_list = list(df_users['size_final'].unique())[::-1]
 
 min_date = df_view['Date'].min()
 max_date = df_view['Date'].max() 
-
-# %% Load Region
-
-@st.cache_resource( ttl = 1600) # ttl = 30 Minutos = 60 segundos x 30 = 1800 segundos   
-def df_regions():
-# Load DataFrame 1
-    df_rjc = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp('2024-03-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['categoria'],['ean']) 
-    df_rji = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp('2024-03-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJI'],size_list,['categoria'],['ean'])
-    df_rj1 = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp('2024-03-01'),pd.Timestamp(date.today()),weekday_list,hora_list,[1],  regiao_list,size_list,['categoria'],['ean'])
-    df_rj7 = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp('2024-03-01'),pd.Timestamp(date.today()),weekday_list,hora_list,[7],  regiao_list,size_list,['categoria'],['ean'])
-    df_rj19 = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp('2024-03-01'),pd.Timestamp(date.today()),weekday_list,hora_list,[19],  regiao_list,size_list,['categoria'],['ean'])
-    df_rj36 = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp('2024-03-01'),pd.Timestamp(date.today()),weekday_list,hora_list,[36],  regiao_list,size_list,['categoria'],['ean'])
-    df_rj37 = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp('2024-03-01'),pd.Timestamp(date.today()),weekday_list,hora_list,[37],  regiao_list,size_list,['categoria'],['ean'])
-    df_rj31 = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp('2024-03-01'),pd.Timestamp(date.today()),weekday_list,hora_list,[31],  regiao_list,size_list,['categoria'],['ean'])
-    df_rj27 = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp('2024-03-01'),pd.Timestamp(date.today()),weekday_list,hora_list,[27],  regiao_list,size_list,['categoria'],['ean'])
-    df_rj29 = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp('2024-03-01'),pd.Timestamp(date.today()),weekday_list,hora_list,[29],  regiao_list,size_list,['categoria'],['ean'])
-    df_rj30 = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp('2024-03-01'),pd.Timestamp(date.today()),weekday_list,hora_list,[30],  regiao_list,size_list,['categoria'],['ean'])
-    df_rj24 = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp('2024-03-01'),pd.Timestamp(date.today()),weekday_list,hora_list,[24],  regiao_list,size_list,['categoria'],['ean'])
-    df_rj25 = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp('2024-03-01'),pd.Timestamp(date.today()),weekday_list,hora_list,[25],  regiao_list,size_list,['categoria'],['ean'])
-    df_rj22 = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp('2024-03-01'),pd.Timestamp(date.today()),weekday_list,hora_list,[22],  regiao_list,size_list,['categoria'],['ean'])
-    
-    
-    df_rjc['Region Final'] = 'RJC'
-    df_rji['Region Final'] = 'RJI'
-    df_rj1['Region Final'] = 'RJ1'
-    df_rj7['Region Final'] = 'RJ7'
-    df_rj19['Region Final'] = 'RJ19'
-    df_rj36['Region Final'] = 'RJ36'
-    df_rj37['Region Final'] = 'RJ37'
-    df_rj31['Region Final'] = 'RJ31'
-    df_rj27['Region Final'] = 'RJ27'
-    df_rj29['Region Final'] = 'RJ29'
-    df_rj30['Region Final'] = 'RJ30'
-    df_rj24['Region Final'] = 'RJ24'
-    df_rj25['Region Final'] = 'RJ25'
-    df_rj22['Region Final'] = 'RJ22' 
-
-
-
-    data = {"df_rjc": df_rjc, 
-            "df_rji": df_rji,
-            "df_rj1": df_rj1,
-            "df_rj7": df_rj7, 
-            "df_rj19": df_rj19,
-            "df_rj36": df_rj36,
-            "df_rj37": df_rj37,
-            "df_rj31": df_rj31,
-            "df_rj27": df_rj27,
-            "df_rj29": df_rj29,
-            "df_rj30": df_rj30,  
-            "df_rj24": df_rj24,
-            "df_rj25": df_rj25,
-            "df_rj22": df_rj22 
-            }
-    return data
-    
-cached_data = df_regions()
-df_rjc = cached_data["df_rjc"]
-df_rji = cached_data["df_rji"]
-df_rj1 = cached_data["df_rj1"]
-df_rj7 = cached_data["df_rj7"]
-df_rj19 = cached_data["df_rj19"]
-df_rj36 = cached_data["df_rj36"]
-df_rj37 = cached_data["df_rj37"]
-df_rj31 = cached_data["df_rj31"]
-df_rj27 = cached_data["df_rj27"]
-df_rj29 = cached_data["df_rj29"]
-df_rj30 = cached_data["df_rj30"]
-df_rj24 = cached_data["df_rj24"]
-df_rj25 = cached_data["df_rj25"]
-df_rj22 = cached_data["df_rj22"]
-   
  
-
- 
-# %% Load Categoria
-
-
-@st.cache_resource( ttl = 1600) # ttl = 30 Minutos = 60 segundos x 30 = 1800 segundos   
-def df_categorias():
-# Load DataFrame 1
-    df_RJ = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['categoria'],['ean'])  
-    df_RJ_1_4 = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['categoria'],['ean'])  
-    df_RJ_5_9 = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['categoria'],['ean'])  
-    df_BAC = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['BAC'],size_list,['categoria'],['ean'])  
-    df_Leite = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Leite'],['ean']) 
-    df_Acucar = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Açúcar e Adoçante'],['ean']) 
-    df_Biscoitos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Biscoitos'],['ean']) 
-    df_Arroz_Feijao = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Arroz e Feijão'],['ean']) 
-    df_Derivados_Leite = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Derivados de Leite'],['ean']) 
-    df_Oleos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Óleos, Azeites e Vinagres'],['ean']) 
-    df_Cafe = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Cafés, Chás e Achocolatados'],['ean']) 
-    df_Massas = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Massas Secas'],['ean']) 
-    df_Cervejas = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Cervejas'],['ean']) 
-    df_Sucos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Sucos E Refrescos'],['ean']) 
-    df_Refrigerantes = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Refrigerantes'],['ean']) 
-    df_Limpeza = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Limpeza de Roupa'],['ean']) 
-    df_Chocolates = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Chocolates'],['ean']) 
-    df_Graos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Grãos e Farináceos'],['ean']) 
- 
-    df_RJ['Categoria'] = 'RJC'
-    df_RJ_1_4['Categoria'] = 'RJ 1-4 Cxs'
-    df_RJ_5_9['Categoria'] = 'RJ 5-9 Cxs'
-    df_BAC['Categoria'] = 'BAC'
-    df_Leite['Categoria'] = 'Leite' 
-    df_Acucar['Categoria'] = 'Açúcar e Adoçante' 
-    df_Biscoitos['Categoria'] = 'Biscoitos' 
-    df_Arroz_Feijao['Categoria'] = 'Arroz e Feijão' 
-    df_Derivados_Leite['Categoria'] = 'Derivados de Leite' 
-    df_Oleos['Categoria'] = 'Óleos, Azeites e Vinagres' 
-    df_Cafe['Categoria'] = 'Cafés, Chás e Achocolatados' 
-    df_Massas['Categoria'] = 'Massas Secas' 
-    df_Cervejas['Categoria'] = 'Cervejas' 
-    df_Sucos['Categoria'] = 'Sucos E Refrescos' 
-    df_Refrigerantes['Categoria'] = 'Refrigerantes'  
-    df_Limpeza['Categoria'] = 'Limpeza de Roupa' 
-    df_Chocolates['Categoria'] = 'Chocolates' 
-    df_Graos['Categoria'] = 'Grãos e Farináceos'
-
-    data = {
-        
-            "df_RJ": df_RJ, 
-            "df_RJ_1_4": df_RJ_1_4, 
-            "df_RJ_5_9": df_RJ_5_9, 
-            "df_BAC": df_BAC, 
-            "df_Leite": df_Leite,
-            "df_Acucar": df_Acucar,
-            "df_Biscoitos": df_Biscoitos,
-            "df_Arroz_Feijao": df_Arroz_Feijao, 
-            "df_Derivados_Leite": df_Derivados_Leite,
-            "df_Oleos": df_Oleos,
-            "df_Cafe": df_Cafe,
-            "df_Massas": df_Massas,
-            "df_Cervejas": df_Cervejas,
-            "df_Sucos": df_Sucos,
-            "df_Refrigerantes": df_Refrigerantes,  
-            "df_Limpeza": df_Limpeza,
-            "df_Chocolates": df_Chocolates,
-            "df_Graos": df_Graos 
-            }
-    return data
-    
-cached_data = df_categorias() 
