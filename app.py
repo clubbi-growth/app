@@ -1274,4 +1274,172 @@ with tab0:
                 fig        
 
 
+
+         
+        elif df_count >= 5 : 
+            
+            if df_count==5: st.header("Categoria")   
+
+            st.markdown('#### ' + cached_data[key]['Categoria'].unique()[0])  
+            col = st.columns((2,  2, 2), gap='medium')
+            with col[0]:
+                
+                            
+                df_plot =  cached_data[key].copy()   
+                df_plot = df_plot.reset_index(drop = False)
+                df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
+                df_plot = df_plot.set_index('DateHour') 
+
+                if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
+                df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
+                df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
+                df_plot = df_plot[df_plot['Hora'] == max_hora_orders]
+                dados_x =  df_plot.index
+                dados_y =  df_plot['Positivação Categoria']
+                dados_y2 =  df_plot['% Share Positivação Categoria'] 
+                dados_y3 =  df_plot['Gmv Acum'] 
+                fig=py.line(x=dados_x, y=dados_y,   title = 'Positivação Categoria' ,  labels=dict(y="Positivação", x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
+
+                fig 
+
+            with col[1]:
+                
+                fig=py.line(x=dados_x, y=dados_y3,   title = 'Gmv' ,  labels=dict(y="Gmv Acum" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
+
+                fig     
+            
+            with col[2]:
+                
+                fig=py.line(x=dados_x, y=dados_y2,  title = '% Positivação Categoria' ,  labels=dict(y="% Positivação" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
+
+                fig        
+    
+            # if "is_expander_open" not in st.session_state:
+            #     st.session_state["is_expander_open"] = False
+            # if "expander_content" not in st.session_state:
+            #     st.session_state["expander_content"] = None  # Placeholder for content
+
+            # def update_expander_content():
+            #     # Update expander content based on logic or user input
+            #     st.session_state["expander_content"] = "New content!"  # Example update
+
+            # # Expander with toggle button
+            # with st.expander("My Expander"):
+            #     button_text = "Expand" if not st.session_state["is_expander_open"] else "Collapse"
+            #     if st.button(button_text):
+            #         st.session_state["is_expander_open"] = not st.session_state["is_expander_open"]
+            #         # Manually trigger content update after state change
+            #         update_expander_content()
+
+            #     # Display content based on session state
+            #     if st.session_state["is_expander_open"]:
+            #         if st.session_state["expander_content"]:
+            #             st.write(st.session_state["expander_content"])
+            #         else:
+            #             st.write("Initial expander content.")
+
+            #     # Optional: Display message based on state outside the expander
+            #     if st.session_state["is_expander_open"]:
+            #         st.write("Expander is currently open.")
+
+    
+            with st.expander('Detalhes', expanded= False):
+
+                var = 10 
+                st.markdown('#### Métricas Tráfego Categoria' )  
+
+
+                col = st.columns((2,  2), gap='medium')
+                with col[0]:
+                    
+                                
+                    df_plot =  cached_data[key].copy()
+                    df_plot = df_plot.reset_index(drop = False)
+                    df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
+                    df_plot = df_plot.set_index('DateHour') 
+        
+
+                    if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
+                    df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
+                    df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
+                    df_plot = df_plot[df_plot['Hora'] == max_hora_trafego]
+                    dados_x =  df_plot.index 
+                    dados_y =  df_plot['search_products Acum']
+                    dados_y2 =  df_plot['% Conversão Acum'] 
+                    fig=py.line(x=dados_x, y=dados_y,   title = 'Search Products' ,  labels=dict(y="Search Product", x="Data" ) , height=300, width= 500, markers = True,    line_shape='spline')
+
+                    fig 
+
+                with col[1]:
+                    
+                    fig=py.line(x=dados_x, y=dados_y2,  title = '% Conversão Acum' ,  labels=dict(y="% Conversão Acum" , x="Hora") , height=300, width= 500, markers = True,    line_shape='spline')
+
+                    fig     
+
+                
+
+                categoria_atual = cached_data[key]['Categoria'].unique()[0]     
+
+                        
+                st.markdown('#### Métricas Top Skus' )  
+                
+                st.markdown('#### ' )  
+
+
+                top_skus_atual = df_orders[df_orders['Categoria'] == categoria_atual ][df_orders['unit_ean_prod'].isin(top_skus)]['unit_ean_prod'].unique().tolist()
+                    
+                for k in range(0,len(top_skus_atual)):
+
+                    produto = df_orders[df_orders['Categoria'] == categoria_atual ][df_orders['unit_ean_prod'] == top_skus_atual[k]]['Produtos'].unique()[0]
+                    ean_prod = df_orders[df_orders['Categoria'] == categoria_atual ][df_orders['unit_ean_prod'] == top_skus_atual[k]]['unit_ean_prod'].unique()[0]
+                    st.markdown('##### ' + produto )                            
+                        
+                                    
+                    df_prod = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['categoria'],[top_skus_atual[k]]) 
+                        
+
+                    df_plot =  df_prod.copy()   
+                    df_plot = df_plot.reset_index(drop = False)
+                    df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
+                    df_plot = df_plot.set_index('DateHour')  
+
+                    col = st.columns((2,  2, 2), gap='medium')
+
+                    with col[0]:
+                        
+                                    
+                        df_plot =  df_prod.copy()   
+                        df_plot = df_plot.reset_index(drop = False)
+                        df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
+                        df_plot = df_plot.set_index('DateHour') 
+            
+
+                        if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
+                        df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
+                        df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
+                        df_plot = df_plot[df_plot['Hora'] == max_hora_orders]
+                        dados_x =  df_plot.index
+                        dados_y =  df_plot['Positivação Categoria']
+                        dados_y2 =  df_plot['% Share Positivação Categoria'] 
+                        dados_y3 =  df_plot['Gmv Acum'] 
+                        fig=py.line(x=dados_x, y=dados_y,   title = 'Positivação Categoria' ,  labels=dict(y="Positivação", x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
+
+                        fig 
+
+                    with col[1]:
+                        
+                        fig=py.line(x=dados_x, y=dados_y3,   title = 'Gmv' ,  labels=dict(y="Gmv Acum" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
+
+                        fig     
+                    
+                    with col[2]:
+                        
+                        fig=py.line(x=dados_x, y=dados_y2,  title = '% Positivação Categoria' ,  labels=dict(y="% Positivação" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
+
+                        fig    
+
+
+
+
+
          
