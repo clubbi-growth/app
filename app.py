@@ -11,7 +11,7 @@ from datetime import date
 import matplotlib.pyplot as plt 
  
 import plotly.express as py 
-from PIL import Image
+#from PIL import Image
 import redshift_connector
 import mysql.connector as connection
 import datetime
