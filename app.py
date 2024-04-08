@@ -43,7 +43,7 @@ print(f"Hora: {hora_formatada}")
 
 print('Imagem')
 
-icon = Image.open("C:/Users/leona/Área de Trabalho/Prophet/Clubbi.png") 
+#icon = Image.open("C:/Users/leona/Área de Trabalho/Prophet/Clubbi.png") 
 
 data_imagem = data_atual.strftime('%d/%m/%Y')
 hora_imagem = hora_atual.strftime('%H:%M:%S')
