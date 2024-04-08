@@ -1083,5 +1083,195 @@ with st.sidebar:
 
 data_min = date_range[0] 
 data_max = date_range[1] + pd.offsets.Day(1)
-            
 
+tab0 , tab1, tab2, tab3 = st.tabs(["Categoria","Trafego", "Forecast Gmv", "Forecast Peso"])
+df_count = 0 
+        
+with tab0:
+ 
+
+    for key, value in cached_data.items():
+
+        df_count = df_count + 1 
+ 
+        if df_count == 1:
+            
+            st.header("Geral")
+
+            st.markdown('#### ' + cached_data[key]['Categoria'].unique()[0])  
+
+            df_plot =  cached_data[key].copy()   
+            df_plot = df_plot.reset_index(drop = False)
+            df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
+            df_plot = df_plot.set_index('DateHour') 
+
+ 
+
+            df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
+            df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
+
+            if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
+            if hora_list[0] != 'Hora': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
+
+
+#            df_plot = df_plot[df_plot['Hora'] == max_hora_orders]
+            dados_x =  df_plot.index
+            dados_y1 =  df_plot['Positivação Categoria']
+            dados_y2 =  df_plot['Gmv Acum'] 
+
+            df_plot_forecast = df_plot[df_plot.index >= pd.Timestamp(data_min) +  pd.offsets.Day(30)]
+            dados_x_forecast =  df_plot_forecast.index
+            dados_y3 = df_plot_forecast['Forecast Gmv'] 
+             
+            col = st.columns((2,  2, 2), gap='medium')
+
+            with col[0]:
+                
+                fig=py.line(x=dados_x, y=dados_y1,   title = 'Positivação' ,  labels=dict(y="Positivação" , x="Data") , height=300, width= 450, markers = True,    line_shape='spline')
+
+                fig 
+
+            with col[1]:
+                
+                fig=py.line(x=dados_x, y=dados_y2,   title = 'Gmv' ,  labels=dict(y="Gmv Acum", x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
+
+                fig      
+            
+            with col[2]:
+                
+                fig=py.line(x=dados_x_forecast, y=dados_y3,  title = 'Forecast Gmv' ,  labels=dict(y="Forecast Gmv" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
+
+                fig        
+
+
+            with st.expander('Detalhes', expanded= False):
+                st.markdown('#### ' + cached_data["df_RJ_1_4"]['Categoria'].unique()[0])  
+
+                df_plot =  cached_data[key].copy()   
+                df_plot = df_plot.reset_index(drop = False)
+                df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
+                df_plot = df_plot.set_index('DateHour') 
+
+                df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
+                df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
+
+                if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
+                if hora_list[0] != 'Hora': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
+ 
+                dados_x =  df_plot.index
+                dados_y1 =  df_plot['Positivação Categoria']
+                dados_y2 =  df_plot['Gmv Acum'] 
+
+                df_plot_forecast = df_plot[df_plot.index >= pd.Timestamp(data_min) +  pd.offsets.Day(30)]
+                dados_x_forecast =  df_plot_forecast.index
+                dados_y3 = df_plot_forecast['Forecast Gmv'] 
+                
+                
+                col = st.columns((2,  2, 2), gap='medium')
+
+                with col[0]:
+                    
+                    fig=py.line(x=dados_x, y=dados_y1,   title = 'Positivação' ,  labels=dict(y="Positivação", x="Data", ) , height=300, width= 450, markers = True,    line_shape='spline')
+
+                    fig 
+
+                with col[1]:
+                    
+                    fig=py.line(x=dados_x, y=dados_y2,   title = 'Gmv' ,  labels=dict(y="Gmv Acum", x="Hora") , height=300, width= 450, markers = True,    line_shape='spline')
+
+                    fig      
+                
+                with col[2]:
+                    
+                    fig=py.line(x=dados_x_forecast, y=dados_y3,  title = 'Forecast Gmv' ,  labels=dict(x="Data", y="Forecast Gmv") , height=300, width= 450, markers = True,    line_shape='spline')
+
+                    fig      
+
+                st.markdown('#### ' + cached_data["df_RJ_5_9"]['Categoria'].unique()[0])  
+
+                df_plot =  cached_data[key].copy()   
+                df_plot = df_plot.reset_index(drop = False)
+                df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
+                df_plot = df_plot.set_index('DateHour') 
+
+                if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
+                df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
+                df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
+
+
+                df_plot = df_plot[df_plot['Hora'] == max_hora_orders]
+                dados_x =  df_plot.index
+                dados_y1 =  df_plot['Positivação Categoria']
+                dados_y2 =  df_plot['Gmv Acum'] 
+
+                df_plot_forecast = df_plot[df_plot.index >= pd.Timestamp(data_min) +  pd.offsets.Day(30)]
+                dados_x_forecast =  df_plot_forecast.index
+                dados_y3 = df_plot_forecast['Forecast Gmv'] 
+                
+                
+                col = st.columns((2,  2, 2), gap='medium')
+
+                with col[0]:
+                    
+                    fig=py.line(x=dados_x, y=dados_y1,   title = 'Positivação' ,  labels=dict(y="Positivação", x="Data") , height=300, width= 450, markers = True,    line_shape='spline')
+
+                    fig 
+
+                with col[1]:
+                    
+                    fig=py.line(x=dados_x, y=dados_y2,   title = 'Gmv' ,  labels=dict(y="Gmv Acum" , x="Hora" ) , height=300, width= 450, markers = True,    line_shape='spline')
+
+                    fig      
+                
+                with col[2]:
+                    
+                    fig=py.line(x=dados_x_forecast, y=dados_y3,  title = 'Forecast Gmv' ,  labels=dict(y="Forecast Gmv" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
+
+                    fig      
+
+  
+        elif df_count == 4:
+            st.markdown('#### ' + cached_data[key]['Categoria'].unique()[0])  
+
+            df_plot =  cached_data[key].copy()   
+            df_plot = df_plot.reset_index(drop = False)
+            df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
+            df_plot = df_plot.set_index('DateHour') 
+
+            if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
+            df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
+            df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
+
+
+            df_plot = df_plot[df_plot['Hora'] == max_hora_orders]
+            dados_x =  df_plot.index
+            dados_y1 =  df_plot['Positivação Categoria']
+            dados_y2 =  df_plot['Gmv Acum'] 
+
+            df_plot_forecast = df_plot[df_plot.index >= pd.Timestamp(data_min) +  pd.offsets.Day(30)]
+            dados_x_forecast =  df_plot_forecast.index
+            dados_y3 = df_plot_forecast['Forecast Gmv'] 
+            
+            
+            col = st.columns((2,  2, 2), gap='medium')
+
+            with col[0]:
+                
+                fig=py.line(x=dados_x, y=dados_y1,   title = 'Positivação' ,  labels=dict(y="Positivação Categoria" , x="Data") , height=300, width= 450, markers = True,    line_shape='spline')
+
+                fig 
+
+            with col[1]:
+                
+                fig=py.line(x=dados_x, y=dados_y2,   title = 'Gmv' ,  labels=dict(y="Gmv Acum" , x="Hora") , height=300, width= 450, markers = True,    line_shape='spline')
+
+                fig      
+            
+            with col[2]:
+                
+                fig=py.line(x=dados_x_forecast, y=dados_y3,  title = 'Forecast Gmv' ,  labels=dict(y="Forecast Gmv" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
+
+                fig        
+
+
+         
