@@ -1033,3 +1033,55 @@ def df_categorias():
 cached_data = df_categorias() 
 
 
+####################################### STREAMLIT ##################################### 
+
+
+
+# %% Streamlit Frontend
+
+
+with st.sidebar:
+    
+    st.image(icon, width=80) 
+    st.title('Data Growth App')
+        
+    date_range = st.slider("Data:", min_value=max_date , max_value=min_date,  value=[min_date, max_date] , format="YY-MM-DD") 
+
+
+    # regiao_list= st.multiselect("Região:", regiao_list )
+    # region_id_list= st.multiselect("Region Id:", region_list )
+    weekday_list= st.multiselect("Dia da Semana:", weekday_list, default= data_atual.weekday() )
+    hora_list= st.multiselect("Hora:", hora_list, default  = max_hora_orders )
+    # size_list= st.multiselect("Tipo:", size_list )
+
+
+
+    # if len(regiao_list)== 0: regiao_list=['Região']
+    # if len(region_id_list)== 0: region_id_list=['region_id']
+    if len(weekday_list)== 0: weekday_list=['Weekday']
+    if len(hora_list)== 0: hora_list=['Hora']
+    # if len(size_list)== 0: size_list=['size']
+
+        
+        
+
+    # print('region_id_list')
+    # print(regiao_list)
+
+    if 'clicked' not in st.session_state:
+        st.session_state.clicked = False 
+
+    def click_button():
+        st.session_state.clicked = True 
+
+    # st.button('Filter', on_click=click_button)
+
+    if st.session_state.clicked: 
+        st.session_state.clicked = False  
+        df_view = cria_df_view(df_datetime,df_users, df_trafego, df_orders,pd.Timestamp(date_range[0]),pd.Timestamp(date_range[1]),weekday_list,hora_list,region_id_list,  regiao_list,size_list,['categoria'],['ean'])
+        
+
+data_min = date_range[0] 
+data_max = date_range[1] + pd.offsets.Day(1)
+            
+
