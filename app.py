@@ -1042,7 +1042,7 @@ cached_data = df_categorias()
 
 with st.sidebar:
     
-    st.image(icon, width=80) 
+#    st.image(icon, width=80) 
     st.title('Data Growth App')
         
     date_range = st.slider("Data:", min_value=max_date , max_value=min_date,  value=[min_date, max_date] , format="YY-MM-DD") 
