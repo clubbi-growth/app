@@ -53,6 +53,7 @@ hora_imagem = hora_atual.strftime('%H:%M:%S')
 print(f"Data: {data_imagem}")
 print(f"Hora: {hora_imagem}") 
   
+
 # %% Streamlit 
 # Streamlit
 alt.themes.enable("dark")
@@ -298,7 +299,6 @@ def orders_final():
  
  
 df_orders = orders_final()
-
  
 @st.cache_resource( ttl = 600) # ttl = 30 Minutos = 60 segundos x 30 = 1800 segundos  
 def hora_orders_final():
@@ -319,6 +319,8 @@ hora_atualizacao = hora_orders_final()
  
 date_hour_orders = df_orders[df_orders['Data'] == df_orders['Data'].max()]['DateHour'].max() - timedelta(hours=1)    
 max_hora_orders = df_orders[df_orders['Data'] == df_orders['Data'].max()]['Hora'].max() -1 
+  
+ 
 
 # %% Top Skus 
 
@@ -592,6 +594,27 @@ def load_trafego_produtos():
 
 df_trafego_produtos = load_trafego_produtos()
  
+
+@st.cache_resource( ttl = 600) # ttl = 30 Minutos = 60 segundos x 30 = 1800 segundos  
+def hora_trafego_final():
+    data_atual = datetime.date.today()
+    hora_atual = datetime.datetime.now() 
+
+    data_formatada = data_atual.strftime('%d/%m/%Y')
+    hora_formatada = hora_atual.strftime('%H:%M:%S')
+    print(f"Data: {data_formatada}")
+    print(f"Hora: {hora_formatada}")  
+
+
+    data_hora_completa = f"{data_formatada} {hora_formatada}"
+    return data_hora_completa
+
+
+hora_atualizacao_trafego = hora_trafego_final() 
+  
+
+
+
  
 data_atual = datetime.date.today()
 hora_atual = datetime.datetime.now() 
@@ -957,7 +980,7 @@ def cria_df_view_categoria(df_datetime,df_users, df_trafego,df_orders,min_date,m
 # #df_prod = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['categoria'],[top_skus_atual[k]]) 
 # df_prod = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['categoria'],['7898403782387']) 
  
- 
+
 # df_prod[['Gmv','Gmv Acum']].tail(20) 
 # df_RJ = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Chocolates'],['ean'])  
 # df_RJ = df_RJ.reset_index(drop = False)
@@ -1264,7 +1287,10 @@ with tab0:
         if df_count == 1:
             
             st.markdown('###### Atualizado em: ' + str(hora_atualizacao) + ' / Hora Filtrada: ' + str(max_hora_orders))  
-            st.header("Geral")
+            
+
+            st.header("Geral") 
+ 
 
             st.markdown('#### ' + cached_data[key]['Categoria'].unique()[0])  
 
@@ -1281,8 +1307,7 @@ with tab0:
             if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
             if hora_list[0] != 'Hora': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
 
-
-#            df_plot = df_plot[df_plot['Hora'] == max_hora_orders]
+ 
             dados_x =  df_plot.index
             dados_y1 =  df_plot['Positivação Categoria']
             dados_y2 =  df_plot['Gmv Acum'] 
@@ -1489,3 +1514,908 @@ with tab0:
                 fig=py.line(x=dados_x, y=dados_y2,  title = '% Positivação Categoria' ,  labels=dict(y="% Positivação" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
 
                 fig        
+    
+  
+            with st.expander('Detalhes', expanded= False):
+
+                var = 10 
+
+
+                st.markdown('#### Métricas Tráfego Categoria' )   
+
+ 
+                col = st.columns((2,  2), gap='medium')
+                with col[0]:
+                    
+                                
+                    df_plot =  cached_data[key].copy()
+                    df_plot = df_plot.reset_index(drop = False)
+                    df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
+                    df_plot = df_plot.set_index('DateHour') 
+        
+
+                    if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
+                    if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
+
+                    df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
+                    df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
+                    #df_plot = df_plot[df_plot['Hora'] == max_hora_trafego]
+            
+                    
+                    dados_x =  df_plot.index 
+                    dados_y =  df_plot['search_products Acum']
+                    dados_y2 =  df_plot['% Conversão Search Acum'] 
+                    fig=py.line(x=dados_x, y=dados_y,   title = 'Search Products' ,  labels=dict(y="Search Product", x="Data" ) , height=300, width= 500, markers = True,    line_shape='spline')
+
+                    fig 
+
+                with col[1]:
+                    
+                    fig=py.line(x=dados_x, y=dados_y2,  title = '% Conversão Search Acum' ,  labels=dict(y="% Conversão Search Acum" , x="Hora") , height=300, width= 500, markers = True,    line_shape='spline')
+
+                    fig     
+
+                
+
+                categoria_atual = cached_data[key]['Categoria'].unique()[0]     
+
+                for key in buttons_dic:
+
+                    if key == 'Produtos ' + categoria_atual: 
+                    
+
+                        buttons_dic[key] = st.checkbox('Detalhe ' + key)
+                        
+                        
+                        if buttons_dic[key]:  
+
+                                
+                            st.markdown('#### Métricas Top Skus' )  
+                            
+                            st.markdown('#### ' )  
+
+
+                            top_skus_atual = df_orders[df_orders['Categoria'] == categoria_atual ][df_orders['unit_ean_prod'].isin(top_skus)]['unit_ean_prod'].unique().tolist()
+                                
+                            for k in range(0,len(top_skus_atual)):
+
+                                produto = df_orders[df_orders['Categoria'] == categoria_atual ][df_orders['unit_ean_prod'] == top_skus_atual[k]]['Produtos'].unique()[0]
+                                ean_prod = df_orders[df_orders['Categoria'] == categoria_atual ][df_orders['unit_ean_prod'] == top_skus_atual[k]]['unit_ean_prod'].unique()[0]
+                                st.markdown('##### ' + produto )                            
+                                    
+                                                
+                                df_prod = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['categoria'],[top_skus_atual[k]]) 
+                                    
+
+                                df_plot =  df_prod.copy()   
+                                df_plot = df_plot.reset_index(drop = False)
+                                df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
+                                df_plot = df_plot.set_index('DateHour')  
+
+                                col = st.columns((2,  2, 2), gap='medium')
+
+                                with col[0]:
+                                    
+                                                
+                                    df_plot =  df_prod.copy()   
+                                    df_plot = df_plot.reset_index(drop = False)
+                                    df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
+                                    df_plot = df_plot.set_index('DateHour') 
+                        
+
+                                    if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
+                                    if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
+
+
+                                    df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
+                                    df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
+                                  #  df_plot = df_plot[df_plot['Hora'] == max_hora_orders]
+                                    
+                                    dados_x =  df_plot.index
+                                    dados_y =  df_plot['Positivação Categoria']
+                                    dados_y2 =  df_plot['% Share Positivação Categoria'] 
+                                    dados_y3 =  df_plot['Gmv Acum'] 
+                                    fig=py.line(x=dados_x, y=dados_y,   title = 'Positivação Categoria' ,  labels=dict(y="Positivação", x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
+
+                                    fig 
+
+                                with col[1]:
+                                    
+                                    fig=py.line(x=dados_x, y=dados_y3,   title = 'Gmv' ,  labels=dict(y="Gmv Acum" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
+
+                                    fig     
+                                
+                                with col[2]:
+                                    
+                                    fig=py.line(x=dados_x, y=dados_y2,  title = '% Positivação Categoria' ,  labels=dict(y="% Positivação" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
+
+                                    fig    
+
+ 
+with tab1:
+
+    st.markdown('###### Atualizado em: ' + str(hora_atualizacao_trafego) + ' / Hora Filtrada: ' + str(max_hora_trafego))  
+    
+
+    st.header("Variação Trafego")
+#    st.image("https://static.streamlit.io/examples/cat.jpg", width=200)
+
+    with st.container(): 
+
+       # col = st.columns((9.5,  2), gap='small')
+
+        # with col[0]:
+            
+                    
+        #   st.markdown('#### Variação Tráfego')
+
+        df_view = df_view.sort_values('DateHour',ascending= False)
+                    
+        df_view = df_view[['Date','Hora','trafego Acum', 'Orders Acum','% Conversão Acum', '% Var trafego Acum', '% Var % Conversão Acum' ,'Gmv Acum','Forecast Gmv', '% Var Gmv Acum' , 'Peso Acum',  'Forecast Peso', '% Var Peso Acum']]
+        
+        
+
+            
+        delta_columns = ['% Var trafego Acum','% Var % Conversão Acum'] #,'% Var Gmv Acum' ,   '% Var Peso Acum']
+
+
+    
+    #   for i in delta_columns:
+
+#             df_view[i] = df_view[i].apply(lambda x: f"{x:.2%}")
+    #      df_view[i] = df_view[i].apply(lambda x: '{:.2%}'.format(x))
+        #  df_view[i] = df_view[i].apply(lambda x: float(x.strip('%'))  ) 
+        #  df_view[i] = df_view[i].apply(lambda x: x[4:]  ) 
+        
+#           styled_df = df_view[df_view['Date'] == data_max].style.apply(highlight_negative, subset=delta_columns)
+#           styled_df
+
+        df_style = df_view.copy()
+        df_style = df_style[['Gmv Acum','trafego Acum','Orders Acum','% Conversão Acum','% Var trafego Acum', '% Var % Conversão Acum']]
+
+
+#            df_style  = df_style[df_style['Date'] == data_max] 
+        
+
+        def try_convert(value):
+    
+            try:
+                value = value.rstrip('%')
+                value = float(value) / 100
+                return value
+            except ValueError:
+                return None
+
+        def highlight_negative(s):
+            return ['color: #CD4C46 ' if try_convert(v) < 0 else 'color: #7900F1' for v in s]
+                
+            # Remove the trailing '%' sign (if present)
+#               percent_str = percent_str
+
+            # Convert the string to a float and divide by 100
+#                return float(percent_str) / 100
+#                return 
+
+
+        df_styled = df_style.style\
+                    .apply(highlight_negative, subset=delta_columns)
+
+        df_styled
+
+
+
+
+
+
+
+        # with col[1]:
+
+                
+        #     st.markdown('#### Takeaways')
+        # #     df_trafego_query
+        #     with st.expander('About', expanded=True):
+        #         st.write('''
+        #             - Data: [U.S. Census Bureau](https://www.census.gov/data/datasets/time-series/demo/popest/2010s-state-total.html).
+        #             - :orange[**Gains/Losses**]: states with high inbound/ outbound migration for selected year
+        #             - :orange[**States Migration**]: percentage of states with annual inbound/ outbound migration > 50,000
+        #             ''')
+
+    col = st.columns((2,  2), gap='medium')
+
+    with col[0]:
+            
+                    
+        st.markdown('#### Trafego Acum') 
+
+        df_plot =  df_view.copy()
+
+        df_plot = df_plot.reset_index(drop = False)
+        df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
+        df_plot = df_plot.set_index('DateHour') 
+        
+
+        if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
+        if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
+ 
+ 
+        dados_x =  df_plot.index
+        dados_y =  df_plot['trafego Acum']
+        dados_y2 =  df_plot['% Conversão Acum'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Data", y="Trafego") , height=300, width= 600, markers = True,    line_shape='spline')
+
+        fig 
+
+    with col[1]:
+
+
+                    
+        st.markdown('#### Conversão') 
+        fig=py.line(x=dados_x, y=dados_y2, height=300, width= 600, markers = True,    line_shape='spline')
+        fig
+        #  labels=dict(x="Data", y="% Conversão") ,
+
+
+    col = st.columns((2,  2), gap='medium')
+
+    with col[0]:
+            
+                    
+        st.markdown('#### Gmv Acum') 
+
+        df_plot =  df_view.copy()
+
+        df_plot = df_plot.reset_index(drop = False)
+        df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
+        df_plot = df_plot.set_index('DateHour') 
+        
+
+        if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
+        if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
+
+
+        dados_x =  df_plot.index
+        dados_y =  df_plot['Gmv Acum']
+        dados_y2 =  df_plot['Orders Acum'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Data", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+
+        fig 
+
+    with col[1]:
+
+
+                    
+        st.markdown('#### Pedidos Acum') 
+        fig=py.line(x=dados_x, y=dados_y2,  labels=dict(x="Data", y="Pedidos") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig
+
+
+
+
+# %% Outros 
+
+
+
+
+#                        df_prod
+
+                    #top_skus = [7896079500151,7896183202187] 
+                        
+                    #df_skus = df_orders[df_orders['Categoria'] == categoria ][df_orders['unit_ean_prod'].isin(top_skus)]
+                  #  for i in range(0,len(top_skus)): 
+                 #       top_skus[i]
+                 #   df_Leite = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Leite'],['ean']) 
+                 #   df_Leite
+
+
+
+
+                # st.write('''
+                #     - Data: [U.S. Census Bureau](https://www.census.gov/data/datasets/time-series/demo/popest/2010s-state-total.html).
+                #     - :orange[**Gains/Losses**]: states with high inbound/ outbound migration for selected year
+                #     - :orange[**States Migration**]: percentage of states with annual inbound/ outbound migration > 50,000
+                #     ''')
+
+# with tab1:
+
+#     st.header("Trafego")
+# #    st.image("https://static.streamlit.io/examples/cat.jpg", width=200)
+
+#     with st.container(): 
+
+#         col = st.columns((9.5,  2), gap='small')
+
+#         with col[0]:
+            
+                    
+#             st.markdown('#### Variação Tráfego')
+
+#             df_view = df_view.sort_values('DateHour',ascending= False)
+                         
+#             df_view = df_view[['Date','Hora','trafego Acum', 'Orders Acum','% Conversão Acum', '% Var trafego Acum', '% Var % Conversão Acum' ,'Gmv Acum','Forecast Gmv', '% Var Gmv Acum' , 'Peso Acum',  'Forecast Peso', '% Var Peso Acum']]
+             
+             
+ 
+                
+#             delta_columns = ['% Var trafego Acum','% Var % Conversão Acum'] #,'% Var Gmv Acum' ,   '% Var Peso Acum']
+ 
+
+        
+#          #   for i in delta_columns:
+
+#    #             df_view[i] = df_view[i].apply(lambda x: f"{x:.2%}")
+#           #      df_view[i] = df_view[i].apply(lambda x: '{:.2%}'.format(x))
+#               #  df_view[i] = df_view[i].apply(lambda x: float(x.strip('%'))  ) 
+#               #  df_view[i] = df_view[i].apply(lambda x: x[4:]  ) 
+            
+#  #           styled_df = df_view[df_view['Date'] == data_max].style.apply(highlight_negative, subset=delta_columns)
+#  #           styled_df
+ 
+#             df_style = df_view.copy()
+#             df_style = df_style[['Gmv Acum','trafego Acum','Orders Acum','% Conversão Acum','% Var trafego Acum', '% Var % Conversão Acum']]
+
+
+# #            df_style  = df_style[df_style['Date'] == data_max] 
+              
+
+#             def try_convert(value):
+          
+#                 try:
+#                     value = value.rstrip('%')
+#                     value = float(value) / 100
+#                     return value
+#                 except ValueError:
+#                     return None
+
+#             def highlight_negative(s):
+#                  return ['color: #CD4C46 ' if try_convert(v) < 0 else 'color: #7900F1' for v in s]
+                      
+#                 # Remove the trailing '%' sign (if present)
+#  #               percent_str = percent_str
+
+#                 # Convert the string to a float and divide by 100
+# #                return float(percent_str) / 100
+# #                return 
+
+
+#             df_styled = df_style.style\
+#                         .apply(highlight_negative, subset=delta_columns)
+
+#             df_styled
+
+
+
+
+
+
+
+#         with col[1]:
+
+                
+#             st.markdown('#### Takeaways')
+#         #     df_trafego_query
+#             with st.expander('About', expanded=True):
+#                 st.write('''
+#                     - Data: [U.S. Census Bureau](https://www.census.gov/data/datasets/time-series/demo/popest/2010s-state-total.html).
+#                     - :orange[**Gains/Losses**]: states with high inbound/ outbound migration for selected year
+#                     - :orange[**States Migration**]: percentage of states with annual inbound/ outbound migration > 50,000
+#                     ''')
+
+#     col = st.columns((2,  2), gap='medium')
+
+#     with col[0]:
+            
+                    
+#         st.markdown('#### Trafego Acum') 
+ 
+#         df_plot =  df_view.copy()
+#         dados_x =  df_plot.index
+#         dados_y =  df_plot['trafego Acum']
+#         dados_y2 =  df_plot['% Conversão Acum'] 
+#         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Data", y="Trafego") , height=300, width= 600, markers = True,    line_shape='spline')
+
+#         fig 
+
+#     with col[1]:
+
+
+                    
+#         st.markdown('#### Conversão') 
+#         fig=py.line(x=dados_x, y=dados_y2, height=300, width= 600, markers = True,    line_shape='spline')
+#         fig
+#         #  labels=dict(x="Data", y="% Conversão") ,
+
+
+#     col = st.columns((2,  2), gap='medium')
+
+#     with col[0]:
+            
+                    
+#         st.markdown('#### Gmv Acum') 
+ 
+#         df_plot =  df_view.copy()
+#         dados_x =  df_plot.index
+#         dados_y =  df_plot['Gmv Acum']
+#         dados_y2 =  df_plot['Orders Acum'] 
+#         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Data", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+
+#         fig 
+
+#     with col[1]:
+
+
+                    
+#         st.markdown('#### Pedidos Acum') 
+#         fig=py.line(x=dados_x, y=dados_y2,  labels=dict(x="Data", y="Pedidos") , height=300, width= 600, markers = True,    line_shape='spline')
+#         fig
+ 
+
+with tab2:
+    
+
+ 
+   
+
+    df_forecast = pd.concat([ df_rjc, df_rji,df_rj1,df_rj7,df_rj19,df_rj36,df_rj37,df_rj31,df_rj27,df_rj29,df_rj30,df_rj24, df_rj25,df_rj22  ])
+    
+    df_forecast = df_forecast.reset_index(drop = False)
+    df_forecast['weekday'] = df_forecast['DateHour'].dt.weekday 
+    df_forecast['Date'] =   pd.to_datetime(df_forecast['DateHour'].dt.date)
+    df_forecast = df_forecast.set_index('DateHour')   
+ 
+    df_forecast = df_forecast[['Date','Hora','Region Final','Forecast Gmv','Forecast Peso']]
+    data_fim =  data_max -  pd.offsets.Day(1) 
+    st.header("Forecast Gmv " + str(data_fim.strftime('%d/%m/%Y')) ) 
+    print(df_forecast['Region Final'].unique().tolist())
+
+
+   #df_forecast = df_forecast.sort_values('Forecast Peso',ascending= False)
+
+    col = st.columns((2,  2), gap='medium')
+    with col[0]:
+            
+                        
+        st.markdown('#### RJC') 
+
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJC' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]  
+
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Gmv'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+
+        fig     
+
+
+
+
+    with col[1]:
+  
+        st.markdown('#### RJI')  
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJI' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Gmv'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+
+    col = st.columns((2,  2), gap='medium')
+    with col[0]:
+        
+                    
+          
+        st.markdown('#### RJC - Benfica - 1')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ1' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Gmv'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+    with col[1]:
+  
+        st.markdown('#### RJC - SJM - 7')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ7' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Gmv'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+
+    col = st.columns((2,  2), gap='medium')
+    with col[0]:
+        
+                    
+          
+        st.markdown('#### RJC - Barra - 19')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ19' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Gmv'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+    with col[1]:
+  
+        st.markdown('#### RJC - Niterói - 36')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ36' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Gmv'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+    col = st.columns((2,  2), gap='medium')
+    with col[0]:
+        
+                    
+          
+        st.markdown('#### RJM - Campo Grande - 37')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ37' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Gmv'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+    with col[1]:
+  
+        st.markdown('#### RJM - Seropédica - 31')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ31' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Gmv'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+    col = st.columns((2,  2), gap='medium')
+    with col[0]:
+        
+                    
+          
+        st.markdown('#### RJM - Itaguai - 27')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ27' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Gmv'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig       
+
+    with col[1]:
+  
+        st.markdown('#### RJM - Maricá - 29')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ29' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Gmv'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+
+    col = st.columns((2,  2), gap='medium')
+
+    with col[0]:
+        
+                    
+          
+        st.markdown('#### RJM - Rio Bonito - 30')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ30' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Gmv'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+    with col[1]:
+  
+        st.markdown('#### RJI - Petrópolis - 23')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ24' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Gmv'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+    col = st.columns((2,  2), gap='medium')
+
+
+    with col[0]:
+        
+          
+        st.markdown('#### RJI - Volta Redonda - 25')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ25' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Gmv'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+    with col[1]:
+  
+        st.markdown('#### RJI - Cabo Frio - 22')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ22' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Gmv'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+    
+    df_forecast = df_forecast.reset_index(drop = False)
+        
+
+    df_dummies = pd.get_dummies(df_forecast['Region Final'])   
+    lista_region = df_dummies.columns.tolist()
+    lista_region.remove('RJC')
+    lista_region.remove('RJI')
+    lista_region_final = ['RJC','RJI'] + lista_region
+    df_dummies = df_dummies[lista_region_final]    
+    df_dummies.columns=['Forecast Gmv '  + str(df_dummies.columns[k-1])  for k in range(1, df_dummies.shape[1] + 1)]
+    df_dummies = df_dummies.multiply(df_forecast['Forecast Gmv'], axis=0) 
+    df_forecast = df_forecast.merge(  df_dummies, how='left', left_index=True, right_index=True)  
+    df_forecast = df_forecast[df_forecast['Date'] == data_fim ]  
+    df_forecast = df_forecast.drop(columns = ['Date','Region Final','Forecast Peso','Forecast Gmv']).groupby(['DateHour','Hora']).sum()
+    df_forecast = df_forecast.sort_values(by=['DateHour'], ascending = False)
+    df_forecast = df_forecast.apply(lambda x: round(x))
+    df_forecast
+
+with tab3:
+
+
+   
+
+    df_forecast = pd.concat([ df_rjc, df_rji,df_rj1,df_rj7,df_rj19,df_rj36,df_rj37,df_rj31,df_rj27,df_rj29,df_rj30,df_rj24, df_rj25,df_rj22  ])
+    
+    df_forecast = df_forecast.reset_index(drop = False)
+    df_forecast['weekday'] = df_forecast['DateHour'].dt.weekday 
+    df_forecast['Date'] =   pd.to_datetime(df_forecast['DateHour'].dt.date)
+    df_forecast = df_forecast.set_index('DateHour')   
+ 
+    df_forecast = df_forecast[['Date','Hora','Region Final','Forecast Gmv','Forecast Peso']]
+    data_fim =  data_max -  pd.offsets.Day(1) 
+    st.header("Forecast Peso " + str(data_fim.strftime('%d/%m/%Y')) ) 
+    print(df_forecast['Region Final'].unique().tolist())
+
+
+   #df_forecast = df_forecast.sort_values('Forecast Peso',ascending= False)
+
+    col = st.columns((2,  2), gap='medium')
+    with col[0]:
+            
+                        
+        st.markdown('#### RJC') 
+
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJC' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]  
+
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Peso'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+
+        fig     
+
+
+
+
+    with col[1]:
+  
+        st.markdown('#### RJI')  
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJI' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Peso'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+
+    col = st.columns((2,  2), gap='medium')
+    with col[0]:
+        
+                    
+          
+        st.markdown('#### RJC - Benfica - 1')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ1' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Peso'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+    with col[1]:
+  
+        st.markdown('#### RJC - SJM - 7')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ7' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Peso'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+
+    col = st.columns((2,  2), gap='medium')
+    with col[0]:
+        
+                    
+          
+        st.markdown('#### RJC - Barra - 19')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ19' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Peso'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+    with col[1]:
+  
+        st.markdown('#### RJC - Niterói - 36')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ36' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Peso'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+    col = st.columns((2,  2), gap='medium')
+    with col[0]:
+        
+                    
+          
+        st.markdown('#### RJM - Campo Grande - 37')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ37' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Peso'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+    with col[1]:
+  
+        st.markdown('#### RJM - Seropédica - 31')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ31' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Peso'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+    col = st.columns((2,  2), gap='medium')
+    with col[0]:
+        
+                    
+          
+        st.markdown('#### RJM - Itaguai - 27')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ27' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Peso'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig       
+
+    with col[1]:
+  
+        st.markdown('#### RJM - Maricá - 29')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ29' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Peso'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+
+    col = st.columns((2,  2), gap='medium')
+
+    with col[0]:
+        
+                    
+          
+        st.markdown('#### RJM - Rio Bonito - 30')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ30' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Peso'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+    with col[1]:
+  
+        st.markdown('#### RJI - Petrópolis - 23')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ24' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Peso'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+    col = st.columns((2,  2), gap='medium')
+
+
+    with col[0]:
+        
+          
+        st.markdown('#### RJI - Volta Redonda - 25')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ25' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Peso'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+    with col[1]:
+  
+        st.markdown('#### RJI - Cabo Frio - 22')
+        df_plot = df_forecast.copy()
+        df_plot = df_plot[df_plot['Date'] == data_fim ] 
+        df_plot = df_plot[df_plot['Region Final'] == 'RJ22' ]
+        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        dados_x =  df_plot.Hora
+        dados_y =  df_plot['Forecast Peso'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig     
+
+    
+    df_forecast = df_forecast.reset_index(drop = False)
+        
+
+    df_dummies = pd.get_dummies(df_forecast['Region Final'])   
+    lista_region = df_dummies.columns.tolist()
+    lista_region.remove('RJC')
+    lista_region.remove('RJI')
+    lista_region_final = ['RJC','RJI'] + lista_region
+    df_dummies = df_dummies[lista_region_final]    
+    df_dummies.columns=['Forecast Peso '  + str(df_dummies.columns[k-1])  for k in range(1, df_dummies.shape[1] + 1)]
+    df_dummies = df_dummies.multiply(df_forecast['Forecast Peso'], axis=0)
+    df_forecast = df_forecast.merge(  df_dummies, how='left', left_index=True, right_index=True)   
+    df_forecast = df_forecast[df_forecast['Date'] == data_fim ] 
+    df_forecast = df_forecast.drop(columns = ['Date','Region Final','Forecast Peso','Forecast Gmv']).groupby(['DateHour','Hora']).sum()
+    df_forecast = df_forecast.sort_values(by=['DateHour'], ascending = False)
+    df_forecast = df_forecast.apply(lambda x: round(x))
+    df_forecast
