@@ -300,16 +300,25 @@ def orders_final():
 df_orders = orders_final()
 
  
-max_hora_orders = df_orders[df_orders['Data'] == df_orders['Data'].max()]['Hora'].max() -1 
+@st.cache_resource( ttl = 600) # ttl = 30 Minutos = 60 segundos x 30 = 1800 segundos  
+def hora_orders_final():
+    data_atual = datetime.date.today()
+    hora_atual = datetime.datetime.now() 
 
+    data_formatada = data_atual.strftime('%d/%m/%Y')
+    hora_formatada = hora_atual.strftime('%H:%M:%S')
+    print(f"Data: {data_formatada}")
+    print(f"Hora: {hora_formatada}")  
+
+
+    data_hora_completa = f"{data_formatada} {hora_formatada}"
+    return data_hora_completa
+
+
+hora_atualizacao = hora_orders_final() 
  
-data_atual = datetime.date.today()
-hora_atual = datetime.datetime.now() 
-
-data_formatada = data_atual.strftime('%d/%m/%Y')
-hora_formatada = hora_atual.strftime('%H:%M:%S')
-print(f"Data: {data_formatada}")
-print(f"Hora: {hora_formatada}")  
+date_hour_orders = df_orders[df_orders['Data'] == df_orders['Data'].max()]['DateHour'].max() - timedelta(hours=1)    
+max_hora_orders = df_orders[df_orders['Data'] == df_orders['Data'].max()]['Hora'].max() -1 
 
 # %% Top Skus 
 
@@ -1254,6 +1263,7 @@ with tab0:
  
         if df_count == 1:
             
+            st.markdown('###### Atualizado em: ' + str(hora_atualizacao) + ' / Hora Filtrada: ' + str(max_hora_orders))  
             st.header("Geral")
 
             st.markdown('#### ' + cached_data[key]['Categoria'].unique()[0])  
