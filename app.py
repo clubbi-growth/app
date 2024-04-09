@@ -36,21 +36,23 @@ print(f"Hora: {hora_formatada}")
  
 # %% Imagem 
 # Imagem
-  
-try:
-#    icon = Image.open("C:/Users/leona/Área de Trabalho/Prophet/Clubbi.png") 
-        
-    print('Imagem')
-except: 
-        
-    icon =  Image.open('https://github.com/clubbi-growth/app/blob/main/Clubbi.png?raw=true')
 
+from PIL import Image
+import requests
+from io import BytesIO
+
+url = 'https://github.com/clubbi-growth/app/blob/main/Clubbi.png?raw=true'
+
+response = requests.get(url)
+icon = Image.open(BytesIO(response.content))
+
+  
 
 data_imagem = data_atual.strftime('%d/%m/%Y')
 hora_imagem = hora_atual.strftime('%H:%M:%S')
 print(f"Data: {data_imagem}")
 print(f"Hora: {hora_imagem}") 
-
+  
 # %% Streamlit 
 # Streamlit
 alt.themes.enable("dark")
