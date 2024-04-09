@@ -36,14 +36,15 @@ print(f"Hora: {hora_formatada}")
  
 # %% Imagem 
 # Imagem
-
-
-
-
-
+ 
 print('Imagem')
+try:
+    icon = Image.open("C:/Users/leona/Área de Trabalho/Prophet/Clubbi.png") 
 
-icon = Image.open("C:/Users/leona/Área de Trabalho/Prophet/Clubbi.png") 
+except: 
+        
+    icon = 'https://github.com/clubbi-growth/app/blob/79c3b513f7c46644ed461c60aa0bd8210d717932/Clubbi.png'
+
 
 data_imagem = data_atual.strftime('%d/%m/%Y')
 hora_imagem = hora_atual.strftime('%H:%M:%S')
