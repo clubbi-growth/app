@@ -306,7 +306,7 @@ df_orders = orders_final()
 @st.cache_resource( ttl = 600) # ttl = 30 Minutos = 60 segundos x 30 = 1800 segundos  
 def hora_orders_final():
     data_atual = datetime.date.today()
-    hora_atual = datetime.datetime.now()  - timedelta(hours=1)   
+    hora_atual = datetime.datetime.now()  - timedelta(hours=3)   
 
     data_formatada = data_atual.strftime('%d/%m/%Y')
     hora_formatada = hora_atual.strftime('%H:%M:%S')
