@@ -521,9 +521,11 @@ def load_trafego_d_1():
 def load_trafego():
     cursor = load_redshift()
     df_d_1 = load_trafego_d_1()
-    cursor.execute(query_trafegod0)
-    df_d0: pd.DataFrame = cursor.fetch_dataframe()  
-    data = pd.concat([df_d_1, df_d0 ] ) 
+   # cursor.execute(query_trafegod0)
+   # df_d0: pd.DataFrame = cursor.fetch_dataframe()  
+    data = df_d_1.copy() 
+   
+   #data = pd.concat([data, df_d0 ] ) 
     data = data.sort_values('datetimes')   
     data['datas'] = pd.to_datetime(data['datas'], format='%Y-%m-%d') 
     data['DateHour'] = data['datas'] + pd.to_timedelta(data['hora'], unit='H')
@@ -567,10 +569,11 @@ def load_trafego_produtos_d_1():
 def load_trafego_produtos(): 
     cursor = load_redshift()
     df_d_1 = load_trafego_produtos_d_1()
-    cursor.execute(query_trafego_produtos_d0)
+    #cursor.execute(query_trafego_produtos_d0)
     df_d0: pd.DataFrame = cursor.fetch_dataframe()  
-    data = df_d0.copy()
-    data = pd.concat([df_d_1, df_d0 ] ) 
+    
+    data = df_d_1.copy()
+    data = pd.concat([data, df_d0 ] ) 
 
     data = data.sort_values('datetimes')   
     data['datas'] = pd.to_datetime(data['datas'], format='%Y-%m-%d') 
