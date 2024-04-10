@@ -1846,7 +1846,7 @@ with tab2:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJC' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]  
+        df_plot = df_plot[df_plot['Hora'] >= 6]  
 
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Gmv'] 
@@ -1863,7 +1863,7 @@ with tab2:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJI' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Gmv'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -1879,7 +1879,7 @@ with tab2:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ1' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Gmv'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -1891,7 +1891,7 @@ with tab2:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ7' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Gmv'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -1907,7 +1907,7 @@ with tab2:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ19' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Gmv'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -1918,7 +1918,7 @@ with tab2:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ36' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Gmv'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -1933,7 +1933,7 @@ with tab2:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ37' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Gmv'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -1945,7 +1945,7 @@ with tab2:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ31' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Gmv'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -1960,7 +1960,7 @@ with tab2:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ27' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Gmv'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -1972,7 +1972,7 @@ with tab2:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ29' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Gmv'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -1989,7 +1989,7 @@ with tab2:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ30' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Gmv'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2000,7 +2000,7 @@ with tab2:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ24' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Gmv'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2016,7 +2016,7 @@ with tab2:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ25' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Gmv'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2027,7 +2027,7 @@ with tab2:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ22' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Gmv'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2081,7 +2081,7 @@ with tab3:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJC' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]  
+        df_plot = df_plot[df_plot['Hora'] >= 6]  
 
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Peso'] 
@@ -2098,7 +2098,7 @@ with tab3:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJI' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Peso'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2114,7 +2114,7 @@ with tab3:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ1' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Peso'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2126,7 +2126,7 @@ with tab3:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ7' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Peso'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2142,7 +2142,7 @@ with tab3:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ19' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Peso'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2153,7 +2153,7 @@ with tab3:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ36' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Peso'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2168,7 +2168,7 @@ with tab3:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ37' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Peso'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2180,7 +2180,7 @@ with tab3:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ31' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Peso'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2195,7 +2195,7 @@ with tab3:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ27' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Peso'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2207,7 +2207,7 @@ with tab3:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ29' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Peso'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2224,7 +2224,7 @@ with tab3:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ30' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Peso'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2235,7 +2235,7 @@ with tab3:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ24' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Peso'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2251,7 +2251,7 @@ with tab3:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ25' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Peso'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
@@ -2262,7 +2262,7 @@ with tab3:
         df_plot = df_forecast.copy()
         df_plot = df_plot[df_plot['Date'] == data_fim ] 
         df_plot = df_plot[df_plot['Region Final'] == 'RJ22' ]
-        df_plot = df_plot[df_plot['Hora'] >= 10]   
+        df_plot = df_plot[df_plot['Hora'] >= 6]   
         dados_x =  df_plot.Hora
         dados_y =  df_plot['Forecast Peso'] 
         fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Hora", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
