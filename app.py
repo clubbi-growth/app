@@ -15,7 +15,8 @@ from PIL import Image
 import redshift_connector
 import mysql.connector as connection
 import datetime
-import numpy as np   
+import numpy as np  
+from statsmodels.tsa.seasonal import STL
   
 
 # %% Data Atual
@@ -132,7 +133,7 @@ print("Query Produtos - df_produtos")
 query_produtos  = "select convert(prod.ean,char) as ean ,prod.description,prod.category_id, prod.unit_ean, prod.only_sell_package, cat.category as Categoria, cat.section  from clubbi.product prod left join clubbi.category cat on cat.id = prod.category_id ;"
 
 
-@st.cache_data()
+@st.cache_resource( ttl = 43200) 
 def load_produtos():
     mydb = load_my_sql()
     data = pd.read_sql(query_produtos,mydb) 
@@ -268,7 +269,7 @@ and DATE(ord.order_datetime) <= '2025-04-01'  \
 ;"\
 
  
-@st.cache_data()
+@st.cache_resource( ttl = 43200) 
 def load_orders_d_1():
     mydb = load_my_sql()
     data = pd.read_sql(query_order_d_1,mydb) 
@@ -470,7 +471,7 @@ where    \
 ;"\
 
  
-@st.cache_data()
+@st.cache_resource( ttl = 43200) 
 def load_users():
     mydb = load_my_sql()
     data = pd.read_sql(query_users,mydb) 
@@ -509,15 +510,15 @@ query_trafego =  '''select date_trunc('day', event_date::date )::date as datas, 
 query_trafegod0 =  '''select date_trunc('day', event_date::date )::date as datas, date_trunc('hour',(TIMESTAMP 'epoch' + event_timestamp / 1000000 * INTERVAL '1 second')::timestamptz  - interval '3 hour') as datetimes, extract(hour from datetimes) as hora, event_user_id as user_id, count(case when event_name = 'login' then event_user_id else null end) as acessos, count(distinct case when event_name = 'login' then event_user_id else null end) as trafego, count(distinct case when event_name = 'searchProducts' then event_user_id else null end) as search_products, count(distinct case when event_name = 'addToCart' then event_user_id else null end) as add_to_cart, count(distinct case when event_name = 'checkout' then event_user_id else null end) as checkout from ga4.events_data_intraday group by 1,2,3,4'''
 
 
-@st.cache_resource()
+@st.cache_resource( ttl = 43200) 
 def load_trafego_d_1():
     cursor = load_redshift()
     cursor.execute(query_trafego)
     data: pd.DataFrame = cursor.fetch_dataframe() 
     return data
 
-
-@st.cache_data( ttl = 600) # ttl = 30 Minutos = 60 segundos x 30 = 1800 segundos  
+ 
+@st.cache_resource( ttl = 600) 
 def load_trafego():
     cursor = load_redshift()
     df_d_1 = load_trafego_d_1()
@@ -642,7 +643,7 @@ print("Df Datetime")
 
 
 
-@st.cache_data( ttl = 600) # ttl = 60 segundos   
+@st.cache_resource( ttl = 600)  # ttl = 60 segundos   
 def load_datetime(): 
     df_datetime = pd.concat([df_trafego[['DateHour']], df_orders[['DateHour']]]).sort_values('DateHour')
     df_datetime = df_datetime.groupby('DateHour').count() 
@@ -1439,12 +1440,12 @@ dicts = {}
 name_list = []
 list_dicts = []
 
-regional_list =  ['RJC', 'RJI','BAC'] 
+regional_list =  ['RJC', 'BAC'] 
 size_list = ['size','1-4 Cxs','5-9 Cxs']    
  
 
 
-@st.cache_data()        
+@st.cache_resource( ttl = 64800) 
 def categorias2(): 
 
     for k in regional_list:
