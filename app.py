@@ -1,7 +1,10 @@
 # %%  Imports
-
+import time 
+import plotly.express as px
+import prophet
+from prophet.plot import plot_plotly, plot_components_plotly  
  
-
+from sklearn.linear_model import LinearRegression
 from datetime import timedelta
 import streamlit as st
 import altair as alt
@@ -16,6 +19,7 @@ import redshift_connector
 import mysql.connector as connection
 import datetime
 import numpy as np  
+from statsmodels.tsa.seasonal import STL
   
 
 # %% Data Atual
@@ -30,7 +34,7 @@ print(f"Data: {data_formatada}")
 print(f"Hora: {hora_formatada}")
  
 
-# %% 
+
 
 
 
@@ -978,8 +982,219 @@ def cria_df_view_categoria(df_datetime,df_users, df_trafego,df_orders,min_date,m
     
     return df_vendas 
  
-   
+def cria_df_view_categoria2(df_datetime,df_users, df_trafego,df_orders,min_date,max_date,weekday_list,hora_list, region_id_list,regiao_list,size_list,categoria_list,ean_lista):
+     
+    df_datetime = df_datetime[df_datetime['DateHour']>=  min_date ]
+    df_datetime = df_datetime[df_datetime['DateHour']<   max_date + pd.offsets.Day(1) ]
+
+    df_users = df_users[['client_site_code','region_id','region name','size_final']]
+    df_orders = df_orders.drop(columns = ['region_id','Região']) 
+    df_orders['Clientes'] = df_orders['Data'].astype(str) + df_orders['customer_id'].astype(str)
+    df_orders =  df_orders.merge( df_users ,how ='left', left_on='customer_id', right_on='client_site_code', suffixes=(False, False))
+    df_trafego =  df_trafego.merge( df_users ,how ='left', left_on='user_id', right_on='client_site_code', suffixes=(False, False))
  
+
+ 
+    if region_id_list[0] != 'region_id': df_orders = df_orders[df_orders['region_id'].isin(region_id_list)] 
+    if regiao_list[0] != 'Região': df_orders = df_orders[df_orders['region name'].isin(regiao_list)] 
+    if size_list[0] != 'size': df_orders = df_orders[df_orders['size_final'].isin(size_list)] 
+
+
+    if region_id_list[0] != 'region_id': df_trafego = df_trafego[df_trafego['region_id'].isin(region_id_list)] 
+    if regiao_list[0] != 'Região': df_trafego = df_trafego[df_trafego['region name'].isin(regiao_list)] 
+    if size_list[0] != 'size': df_trafego = df_trafego[df_trafego['size_final'].isin(size_list)]  
+ 
+    df_clientes = df_orders.drop(columns = ['Hora']).copy()  
+    df_clientes =  df_datetime.merge( df_clientes ,how ='left', left_on='DateHour', right_on='DateHour', suffixes=(False, False))
+    df_clientes['Hora'] = df_clientes['DateHour'].dt.hour
+    df_clientes['Data'] = df_clientes['DateHour'].dt.date
+    df_clientes['Data'] = pd.to_datetime(df_clientes['Data']) 
+    df_clientes['Clientes'] = df_clientes['Data'].astype(str) + df_clientes['customer_id'].astype(str)
+    df_clientes = df_clientes[['Data','DateHour','Clientes','Hora']].groupby(['Data','DateHour','Clientes','Hora']).max().reset_index(drop = False)
+
+     
+
+    df_d0 = df_clientes.copy() 
+  #  hour_lista = df_clientes[df_clientes['Data'] >=   pd.to_datetime(date.today())].Hora.unique().tolist() 
+    hour_lista = df_clientes.Hora.unique().tolist() 
+   # df_d0 = df_d0[df_d0['Data'] >=   pd.to_datetime(date.today())]
+
+
+    # D-0 
+    
+    
+      
+    for i in range(0,len(hora_list)):
+ 
+        df_hora = df_d0.copy() 
+        df_hora = df_hora[['Data','DateHour','Clientes','Hora']][df_hora['Hora']<=hora_list[i]].groupby('Data').agg({ 'DateHour':'max','Hora': 'max', 'Clientes': pd.Series.nunique})
+        df_hora = df_hora.reset_index(drop = False)   
+
+        if i == 0: 
+            df_positivacao_geral = df_hora.copy()
+        else:
+            df_positivacao_geral = pd.concat([df_positivacao_geral, df_hora])
+     
+
+    df_positivacao_geral = df_positivacao_geral.groupby('DateHour').max().reset_index(drop = False)
+    df_positivacao_geral = df_positivacao_geral.rename( columns = {'Clientes':'Positivação Geral'})
+    df_positivacao_geral = df_positivacao_geral[['DateHour','Positivação Geral']] 
+ 
+    if categoria_list[0] != 'categoria': df_orders = df_orders[df_orders['Categoria'].isin(categoria_list)] 
+    if ean_lista[0] != 'ean': df_orders = df_orders[df_orders['unit_ean_prod'] == ean_lista[0]] 
+
+    if categoria_list[0] != 'categoria': df_trafego = df_trafego[df_trafego['Categoria'].isin(categoria_list)] 
+    if ean_lista[0] != 'ean': df_trafego = df_trafego[df_trafego['unit_ean_prod'] == ean_lista[0]] 
+
+    df_trafego = df_trafego[['DateHour', 'search_products','add_to_cart' ]]  
+
+ 
+    df_clientes = df_orders.drop(columns = ['Hora']).copy()  
+    df_clientes =  df_datetime.merge( df_clientes ,how ='left', left_on='DateHour', right_on='DateHour', suffixes=(False, False))
+    df_clientes['Hora'] = df_clientes['DateHour'].dt.hour
+    df_clientes['Data'] = df_clientes['DateHour'].dt.date
+    df_clientes['Data'] = pd.to_datetime(df_clientes['Data']) 
+    df_clientes['Clientes'] = df_clientes['Data'].astype(str) + df_clientes['customer_id'].astype(str)
+    df_clientes = df_clientes[['Data','DateHour','Clientes','Hora']].groupby(['Data','DateHour','Clientes','Hora']).max().reset_index(drop = False)
+
+
+
+    hour_lista = df_clientes[df_clientes['Data'] >=   pd.to_datetime(date.today())].Hora.unique().tolist() 
+    
+    df_hora = df_clientes.copy() 
+    
+    for i in range(0,len(hora_list)):
+
+
+        df_hora = df_clientes.copy() 
+        df_hora = df_hora[['Data','DateHour','Clientes','Hora']][df_hora['Hora']<=hora_list[i]].groupby('Data').agg({ 'DateHour':'max','Hora': 'max', 'Clientes': pd.Series.nunique})
+        df_hora = df_hora.reset_index(drop = False)   
+
+        if i == 0: 
+            df_positivacao_categoria = df_hora.copy()
+        else:
+            df_positivacao_categoria = pd.concat([df_positivacao_categoria, df_hora])
+     
+
+    df_positivacao_categoria = df_positivacao_categoria.groupby('DateHour').max().reset_index(drop = False)
+    df_positivacao_categoria = df_positivacao_categoria.rename( columns = {'Clientes':'Positivação Categoria'})
+    df_positivacao_categoria = df_positivacao_categoria[['DateHour','Positivação Categoria']]  
+ 
+ 
+    df_order_date_hour = df_orders[['DateHour','Gmv','Peso','order_id','Clientes']].groupby('DateHour').agg({'Gmv':'sum', 'Peso':'sum' , 'Clientes': pd.Series.nunique , 'order_id': pd.Series.nunique})    
+    df_trafego_date_hour = df_trafego.groupby('DateHour').sum()
+    df_vendas =  df_datetime.merge( df_trafego_date_hour ,how ='left', left_on='DateHour', right_on='DateHour', suffixes=(False, False))
+    df_vendas =  df_vendas.merge( df_order_date_hour ,how ='left', left_on='DateHour', right_on='DateHour', suffixes=(False, False))
+    
+
+    
+    df_vendas =  df_vendas.merge( df_positivacao_categoria ,how ='left', left_on='DateHour', right_on='DateHour', suffixes=(False, False))
+    df_vendas =  df_vendas.merge( df_positivacao_geral ,how ='left', left_on='DateHour', right_on='DateHour', suffixes=(False, False))
+   
+
+
+  
+    df_vendas = df_vendas.rename(columns = {'order_id':'Orders'})
+    df_vendas['Hora'] = df_vendas['DateHour'].dt.hour
+    df_vendas['Data'] = df_vendas['DateHour'].dt.date
+
+    df_vendas = df_vendas.replace(np.nan , 0) 
+
+
+    df_vendas = df_vendas[['DateHour','Hora','Positivação Categoria','Positivação Geral','Data','search_products','add_to_cart','Gmv','Peso','Orders']]  
+   # df_vendas = df_vendas[['DateHour','Hora','Data','trafego','search_products','add_to_cart','checkout','Gmv','Peso','Orders']]  
+    df_vendas = df_vendas.set_index('DateHour') 
+
+
+
+    cols_df = df_vendas.iloc[:,3:].columns.to_list() 
+    df_lags = df_vendas[cols_df]
+    
+    
+    #df_vendas =  df_vendas.merge( df_clientes ,how ='left', left_on='Data', right_on='Data', suffixes=(False, False))
+
+ 
+    
+    for i in range(1, len(df_lags.columns) ):  df_lags[cols_df[i] + ' Acum'] = df_lags.groupby(['Data'])[cols_df[i]].cumsum()
+
+    df_lags['% Conversão Search'] = df_lags['Orders']/ df_lags['search_products'] 
+    df_lags['% Conversão Search Acum'] = df_lags['Orders Acum']/ df_lags['search_products Acum'] 
+
+    df_gmv_dia = df_lags[['Data','Gmv','Peso']].groupby(['Data']).sum() 
+    df_gmv_dia = df_gmv_dia.rename(columns={'Gmv':'Gmv Dia', 'Peso':'Peso Dia'})
+    df_gmv_dia = df_gmv_dia.reset_index(drop = False)
+    df_lags = df_lags.reset_index(drop = False)
+    df_lags =  df_lags.merge( df_gmv_dia,how ='left', left_on='Data', right_on='Data', suffixes=(False, False))
+    df_lags =  df_lags.set_index('DateHour')
+    
+    df_lags['% Share Gmv'] = df_lags['Gmv Acum']/ df_lags['Gmv Dia']
+    df_lags['% Share Peso'] = df_lags['Peso Acum']/ df_lags['Peso Dia']
+    
+    df_lags = df_lags[['Data','Gmv Acum','Peso Acum','% Share Gmv','% Share Peso']]
+
+    # for i in range(1, len(df_lags.columns) ): 
+
+    #     coluna = df_lags.columns[i]
+        
+    #     lag_list = [7,14,21,28]
+    
+        
+    #     for lag in lag_list:
+
+    #         lag_final = 24* lag
+    #         lag_name = coluna +  ' Lag ' + str(lag) 
+    #         df_lags[lag_name] = df_lags[coluna].shift(periods= lag_final, freq="H") 
+    #         df_lags = df_lags.replace(np.nan, 0)
+
+
+    #     lag_media = coluna  + ' Lag Mean 7/14'      
+    #     df_lags[lag_media] = (df_lags[coluna + ' Lag 7']  +  df_lags[coluna + ' Lag 14'] )/2    
+  
+    #     lag_media = coluna  + ' Lag Mean 7/14/21'      
+    #     df_lags[lag_media] = (df_lags[coluna + ' Lag 7']  +  df_lags[coluna + ' Lag 14'] +  df_lags[coluna + ' Lag 21'] )/3
+
+    
+
+    #     lag_media = coluna  + ' Lag Mean 7/14/21/28'      
+    #     df_lags[lag_media] = (df_lags[coluna + ' Lag 7']  +  df_lags[coluna + ' Lag 14'] + +  df_lags[coluna + ' Lag 21'] +  df_lags[coluna + ' Lag 28'] )/4
+    
+
+    #     lag_var = '% Var ' +  coluna  + ' Lag Mean 7/14/21/28'     
+    #     lag_var = '% Var ' +  coluna         
+    #     df_lags[lag_var] = (df_lags[coluna]/ df_lags[lag_media] -1)
+    #     df_lags[lag_var] = df_lags[lag_var].apply(lambda x: f"{x * 100:.2f}%")
+     
+        
+
+
+
+    # df_lags['Forecast Gmv'] =  df_lags['Gmv Acum'] /  df_lags['% Share Gmv Lag Mean 7/14/21/28'] 
+    # df_lags['Forecast Peso'] =  df_lags['Peso Acum'] /  df_lags['% Share Peso Lag Mean 7/14/21/28'] 
+        
+
+    # df_lags['% Conversão Search'] = df_lags['% Conversão Search'].apply(lambda x: f"{x * 100:.2f}%")
+    # df_lags['% Conversão Search Acum'] = df_lags['% Conversão Search Acum'].apply(lambda x: f"{x * 100:.2f}%")
+    df_vendas =  df_vendas[['Hora','Positivação Categoria','Positivação Geral']].merge(  df_lags.drop(columns = 'Data'), how='left', left_index=True, right_index=True)   
+ 
+  
+    df_vendas['% Share Positivação Categoria'] = df_vendas['Positivação Categoria'] /  df_vendas['Positivação Geral']
+
+    df_vendas['Ano'] = df_vendas.index.year 
+    df_vendas['Mês'] = df_vendas.index.month
+    df_vendas['Date'] = df_vendas.index.date
+    df_vendas['Semana'] = df_vendas.index.isocalendar().week
+    df_vendas['Weekday'] = df_vendas.index.weekday
+    
+    
+
+    if weekday_list[0] != 'Weekday': df_vendas = df_vendas[df_vendas['Weekday'].isin(weekday_list)] 
+    if hora_list[0] != 'Hora': df_vendas = df_vendas[df_vendas['Hora'].isin(hora_list)] 
+    
+    return df_vendas 
+ 
+ 
+
+
 
 # top_skus_atual = df_orders[df_orders['Categoria'] == 'Leite' ][df_orders['unit_ean_prod'].isin(top_skus)]['unit_ean_prod'].unique().tolist()
  
@@ -996,7 +1211,7 @@ def cria_df_view_categoria(df_datetime,df_users, df_trafego,df_orders,min_date,m
  
  
 
-# %%  Load View Geral
+# %% Load View Geral
 print('Load View Geral')
 
 @st.cache_resource( ttl = 1600) # ttl = 30 Minutos = 60 segundos x 30 = 1800 segundos  
@@ -1105,24 +1320,49 @@ print('Load Categoria')
 @st.cache_resource( ttl = 1600) # ttl = 30 Minutos = 60 segundos x 30 = 1800 segundos   
 def df_categorias():
 # Load DataFrame 1
-    df_RJ = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['categoria'],['ean'])  
-    df_RJ_1_4 = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['categoria'],['ean'])  
-    df_RJ_5_9 = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['5-9 Cxs'],['categoria'],['ean'])  
-    df_BAC = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['BAC'],size_list,['categoria'],['ean'])  
-    df_Leite = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Leite'],['ean']) 
-    df_Acucar = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Açúcar e Adoçante'],['ean']) 
-    df_Biscoitos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Biscoitos'],['ean']) 
-    df_Arroz_Feijao = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Arroz e Feijão'],['ean']) 
-    df_Derivados_Leite = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Derivados de Leite'],['ean']) 
-    df_Oleos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Óleos, Azeites e Vinagres'],['ean']) 
-    df_Cafe = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Cafés, Chás e Achocolatados'],['ean']) 
-    df_Massas = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Massas Secas'],['ean']) 
-    df_Cervejas = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Cervejas'],['ean']) 
-    df_Sucos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Sucos E Refrescos'],['ean']) 
-    df_Refrigerantes = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Refrigerantes'],['ean']) 
-    df_Limpeza = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Limpeza de Roupa'],['ean']) 
-    df_Chocolates = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Chocolates'],['ean']) 
-    df_Graos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Grãos e Farináceos'],['ean']) 
+    df_RJ = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['categoria'],['ean'])  
+    df_RJ_1_4 = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['categoria'],['ean'])  
+    df_RJ_5_9 = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['5-9 Cxs'],['categoria'],['ean'])  
+    df_BAC = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['BAC'],['1-4 Cxs'],['categoria'],['ean'])  
+    df_Leite = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Leite'],['ean']) 
+    df_Acucar = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Açúcar e Adoçante'],['ean']) 
+    df_Biscoitos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Biscoitos'],['ean']) 
+    df_Arroz_Feijao = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Arroz e Feijão'],['ean']) 
+    df_Derivados_Leite = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Derivados de Leite'],['ean']) 
+    df_Oleos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Óleos, Azeites e Vinagres'],['ean']) 
+    df_Cafe = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Cafés, Chás e Achocolatados'],['ean']) 
+    df_Massas = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Massas Secas'],['ean']) 
+    df_Cervejas = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Cervejas'],['ean']) 
+    df_Sucos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Sucos E Refrescos'],['ean']) 
+    df_Refrigerantes = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Refrigerantes'],['ean']) 
+    df_Limpeza = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Limpeza de Roupa'],['ean']) 
+    df_Chocolates = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Chocolates'],['ean']) 
+    df_Graos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Grãos e Farináceos'],['ean']) 
+
+
+
+
+    # df_RJ = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['categoria'],['ean'])  
+    # df_RJ_1_4 = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['categoria'],['ean'])  
+    # df_RJ_5_9 = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['5-9 Cxs'],['categoria'],['ean'])  
+    # df_BAC = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['BAC'],size_list,['categoria'],['ean'])  
+    # df_Leite = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Leite'],['ean']) 
+    # df_Acucar = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Açúcar e Adoçante'],['ean']) 
+    # df_Biscoitos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Biscoitos'],['ean']) 
+    # df_Arroz_Feijao = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Arroz e Feijão'],['ean']) 
+    # df_Derivados_Leite = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Derivados de Leite'],['ean']) 
+    # df_Oleos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Óleos, Azeites e Vinagres'],['ean']) 
+    # df_Cafe = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Cafés, Chás e Achocolatados'],['ean']) 
+    # df_Massas = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Massas Secas'],['ean']) 
+    # df_Cervejas = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Cervejas'],['ean']) 
+    # df_Sucos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Sucos E Refrescos'],['ean']) 
+    # df_Refrigerantes = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Refrigerantes'],['ean']) 
+    # df_Limpeza = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Limpeza de Roupa'],['ean']) 
+    # df_Chocolates = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Chocolates'],['ean']) 
+    # df_Graos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Grãos e Farináceos'],['ean']) 
+ 
+
+
  
     df_RJ['Categoria'] = 'RJC'
     df_RJ_1_4['Categoria'] = 'RJ 1-4 Cxs'
@@ -1178,30 +1418,81 @@ def df_categorias_fim():
             df_fim = cached_data[key].copy()
     return df_fim
 
-df_categorias_final = df_categorias_fim()
+df_categorias_final = df_categorias_fim() 
  
+
+# %% Load Categoria 2
+
+data_atual = datetime.date.today()
+hora_atual = datetime.datetime.now()  - timedelta(hours=3)   
+
+data_formatada = data_atual.strftime('%d/%m/%Y')
+hora_formatada = hora_atual.strftime('%H:%M:%S')
+print(f"Data: {data_formatada}")
+print(f"Hora: {hora_formatada}")   
+
+df_top_categorias = df_orders.copy()
+df_top_categorias = df_top_categorias[['Categoria','Gmv']].groupby('Categoria').sum()
+df_top_categorias = df_top_categorias.sort_values('Gmv',ascending = False)
+df_top_categorias = df_top_categorias.head(20)
+df_top_categorias = df_top_categorias.reset_index()
+categoria_list = df_top_categorias['Categoria'].unique().tolist() 
  
-# df_user_teste = df_users.copy() #[['client_site_code','region_id','region name','size_final']]
-# df_orders_teste = df_orders.drop(columns = ['region_id','Região']) 
-# df_teste =  df_orders_teste.merge( df_user_teste ,how ='left', left_on='customer_id', right_on='client_site_code', suffixes=(False, False))
+
+dicts = {}
+name_list = []
+list_dicts = []
+
+regional_list =  ['RJC', 'RJI','BAC'] 
+size_list = ['size','1-4 Cxs','5-9 Cxs']    
+ 
+
+
+@st.cache_data()        
+def categorias2(): 
+
+    for k in regional_list:
+        region = k
+
+        for z in size_list:
+            size = z
+                
+            for i in categoria_list:  # Categorias RJC 1-4 Cxs 
+                categoria = i
+
+                var = categoria + ' ' + region + ' ' + size  
+                print('') 
+                print(var)
+                print('')
+
+                try:
+                    df = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  [region ],[size],[categoria],['ean']) 
+                    df['Categoria'] = categoria
+                    df['Region'] = region 
+                    df['Size'] = size
+                    dicts = {"df_"+ f'{var}':df} 
+                    list_dicts.append(dicts)
+                    name_list.append("df_"+ f'{var}')
+                except:
+                    pass
+
+
+    df_fim = pd.DataFrame()
+    
+    for i in range(0,len(name_list)):
+
+        if len(df_fim) ==0: 
+            df_fim = list_dicts[i][name_list[i]]
+        else:
+            df_fim = pd.concat([df_fim, list_dicts[i][name_list[i]]])
+        
+        
+    return df_fim
+
+df_categorias2 = categorias2() 
   
  
 
-# df_Leite = cached_data["df_Leite"]
-# df_Acucar = cached_data["df_Acucar"]
-# df_Biscoitos = cached_data["df_Biscoitos"]
-# df_Arroz_Feijao = cached_data["df_Arroz_Feijao"]
-# df_Derivados_Leite = cached_data["df_Derivados_Leite"]
-# df_Oleos = cached_data["df_Oleos"]
-# df_Cafe = cached_data["df_Cafe"]
-# df_Massas = cached_data["df_Massas"]
-# df_Cervejas = cached_data["df_Cervejas"]
-# df_Sucos = cached_data["df_Sucos"]
-# df_Refrigerantes = cached_data["df_Refrigerantes"]
-# df_Limpeza = cached_data["df_Limpeza"]
-# df_Chocolates = cached_data["df_Chocolates"]
-# df_Graos = cached_data["df_Graos"]  
- 
 # %% Loops Categoria 
 
 
@@ -1288,7 +1579,7 @@ data_max = date_range[1] + pd.offsets.Day(1)
  
  
  
-tab0 , tab1, tab2, tab3, tab4 = st.tabs(["Categoria","Trafego", "Forecast Gmv D0", "Forecast Peso D0", "Forecast Gmv D+1"])
+tab0, tab1  , tab2, tab3, tab4,tab5 = st.tabs(["Performance D0","Categorias", "Forecast Gmv D0", "Forecast Peso D0", "Forecast Gmv D+1",'Trafego'])
 df_count = 0 
 
 button_count = 0   
@@ -1661,167 +1952,206 @@ with tab0:
     df_categoria_historico = df_categoria_historico.sort_values( by = ['DateHour','Gmv Acum'] , ascending=[False,False])
     df_categoria_historico
 
+with tab1: 
+                              
+    df_categorias2 = df_categorias2.rename(columns={'% Share Positivação Categoria':'% Positivação Categoria'})   
+    df_categorias2['Hora'] = df_categorias2.index.hour 
+    df_categorias2['Data'] = df_categorias2.index.date  
+    df_categorias2["week"] = df_categorias2.index.isocalendar().week
+    df_categorias2["day_of_month"] = df_categorias2.index.day
+    df_categorias2["month"] = df_categorias2.index.month
 
-
-
- 
-with tab1:
-
-    st.markdown('###### Atualizado em: ' + str(hora_atualizacao_trafego) + ' / Hora Filtrada: ' + str(max_hora_trafego))  
+    categoria_list = df_categorias2.sort_values('Categoria', ascending = True).Categoria.unique().tolist()
     
 
-    st.header("Variação Trafego")
-#    st.image("https://static.streamlit.io/examples/cat.jpg", width=200)
 
-    with st.container(): 
 
-       # col = st.columns((9.5,  2), gap='small')
-
-        # with col[0]:
-            
-                    
-        #   st.markdown('#### Variação Tráfego')
-
-        df_view = df_view.sort_values('DateHour',ascending= False)
-                    
-        df_view = df_view[['Date','Hora','trafego Acum', 'Orders Acum','% Conversão Acum', '% Var trafego Acum', '% Var % Conversão Acum' ,'Gmv Acum','Forecast Gmv', '% Var Gmv Acum' , 'Peso Acum',  'Forecast Peso', '% Var Peso Acum']]
+    def df_plot_trend(df_plot, categoria_list,var):
         
+        trend_list = []     
+        dict_trends = {}
+
+        for i in categoria_list:
         
-
-            
-        delta_columns = ['% Var trafego Acum','% Var % Conversão Acum'] #,'% Var Gmv Acum' ,   '% Var Peso Acum']
-
-
-    
-    #   for i in delta_columns:
-
-#             df_view[i] = df_view[i].apply(lambda x: f"{x:.2%}")
-    #      df_view[i] = df_view[i].apply(lambda x: '{:.2%}'.format(x))
-        #  df_view[i] = df_view[i].apply(lambda x: float(x.strip('%'))  ) 
-        #  df_view[i] = df_view[i].apply(lambda x: x[4:]  ) 
-        
-#           styled_df = df_view[df_view['Date'] == data_max].style.apply(highlight_negative, subset=delta_columns)
-#           styled_df
-
-        df_style = df_view.copy()
-        df_style = df_style[['Gmv Acum','trafego Acum','Orders Acum','% Conversão Acum','% Var trafego Acum', '% Var % Conversão Acum']]
-
-
-#            df_style  = df_style[df_style['Date'] == data_max] 
-        
-
-        def try_convert(value):
-    
-            try:
-                value = value.rstrip('%')
-                value = float(value) / 100
-                return value
-            except ValueError:
-                return None
-
-        def highlight_negative(s):
-            return ['color: #CD4C46 ' if try_convert(v) < 0 else 'color: #7900F1' for v in s]
+            df_trend = df_plot.copy()
+            df_trend = df_trend[df_trend["Categoria"] == i]
                 
-            # Remove the trailing '%' sign (if present)
-#               percent_str = percent_str
+            df_trend =  pd.DataFrame(df_trend.asfreq('d').index).set_index('Data').merge(df_trend, left_index = True, right_index=True,how = "left")
+            
+            df_trend = df_trend[[var]]
+            
+            
 
-            # Convert the string to a float and divide by 100
-#                return float(percent_str) / 100
-#                return 
-
-
-        df_styled = df_style.style\
-                    .apply(highlight_negative, subset=delta_columns)
-
-        df_styled
+            res = STL(  df_trend,  robust=True,  ).fit()
 
 
+            df_trend["residual"] = res.resid
+            df_trend["Trend " + i] = res.trend 
+            df_trend["seasonal"] = res.seasonal 
+            df_trend = df_trend.reset_index('Data')
+
+            slopeList = df_trend["Trend " + i].tolist()
+            slope1 = (slopeList[-1] - slopeList[0]) / (len(slopeList) - 1) 
+
+            X = np.arange(len(slopeList)).reshape(-1, 1)  # Independent variable (time)
+            y = slopeList
+            model = LinearRegression()
+            model.fit(X, y)
+            slope2 = model.coef_[0] 
+            dict_trends = {'Categoria': i, 'Slope 1': slope1, 'Slope 2': slope2}
+            trend_list.append(dict_trends) 
+            
+            df_trend = df_trend.set_index('Data')
+            
+            df_plot = df_plot.merge(  df_trend[['Trend ' + i]], how='left', left_index=True, right_index=True)  
+            
+            df_trend_slope = pd.DataFrame(trend_list)[['Categoria','Slope 1','Slope 2']].sort_values('Slope 1', ascending = True)
+            
+            df_trend_slope  = df_trend_slope.set_index('Categoria')[['Slope 1']]
 
 
+        return df_plot, df_trend_slope, var
 
 
+    def plot_trends(df_plot,categoria_filter, var):
+        if len(categoria_filter)== 0: categoria_filter=['Categoria']
 
-        # with col[1]:
+        df_plot_trend = df_plot.copy()
+
+        if categoria_filter[0] != 'Categoria': df_plot_trend = df_plot_trend[df_plot_trend['Categoria'].isin(categoria_list)]
+
+        lista_trend = df_plot.filter(regex='Trend').columns.to_list()  
+        lista_trend_final = []
+        for i in lista_trend: 
+            
+            for k in categoria_filter:            
+                if i[6:].find( k ,0)==0: lista_trend_final.append(i)
+
+
+        if len(lista_trend_final) !=0 : lista_trend = lista_trend_final
+
+
+        df_plot_trend = df_plot_trend[lista_trend].reset_index()
+
+        df_plot_trend = df_plot_trend.groupby(df_plot_trend['Data']).max()
+
+        df_plot_trend = df_plot_trend.reset_index()
+
+
+    
+        fig = px.line(df_plot_trend, x="Data", y=df_plot_trend.columns , hover_data={"Data": "|%B %d, %Y"}, width=1200) #, title='Trend Categorias')
+        fig.update_xaxes(dtick="M1", tickformat="%b\n%Y")
+        st.plotly_chart(fig, theme="streamlit")
+    
+    Trend , Sazonalidade  = st.tabs(["Trend","Sazonalidade"])
+    
+    with Trend: 
+        
+        with st.expander('Filtros', expanded= True):
+
+            with st.form(key = "my_form"):
+                
+                col = st.columns((4, 6), gap='medium')
+                
+                with col[0]:
+                    col = st.columns((2, 2), gap='medium')
+
+                    with col[0]:
+
+                        var_trends = ['Positivação Categoria', '% Positivação Categoria','Gmv Acum' ]
+                        var = st.radio("Métrica", var_trends ) 
+
+                    with col[1]:
+                        categoria_filter = st.multiselect("Categoria", categoria_list,)
+
+                submit_button = st.form_submit_button(label = "Submit")
+         
+
+        regional_list =  ['RJC', 'RJI','BAC']  
+        size_list = ['size','1-4 Cxs','5-9 Cxs']   
+        df_trend_slope_final = pd.DataFrame()
+
+        for i in regional_list:
+            
+              
+            for s in size_list:
+
+
+                df_plot = df_categorias2.copy()
+                df_plot = df_plot.reset_index() 
+                df_plot = df_plot.set_index('Data') 
+                df_plot = df_plot[df_plot['Hora']==23]  
+
+                df_plot = df_plot[df_plot['Region']== i ]  
+                df_plot = df_plot[df_plot['Size']== s]   
+        
+
+                if s == 'size': size_name = 'Geral' 
+                else: size_name = s 
+
+                nome_var =  i + ' - ' + size_name + ' - Trend ' + var  
 
                 
-        #     st.markdown('#### Takeaways')
-        # #     df_trafego_query
-        #     with st.expander('About', expanded=True):
-        #         st.write('''
-        #             - Data: [U.S. Census Bureau](https://www.census.gov/data/datasets/time-series/demo/popest/2010s-state-total.html).
-        #             - :orange[**Gains/Losses**]: states with high inbound/ outbound migration for selected year
-        #             - :orange[**States Migration**]: percentage of states with annual inbound/ outbound migration > 50,000
-        #             ''')
 
-    col = st.columns((2,  2), gap='medium')
+                df_plot, df_trend_slope ,var = df_plot_trend(df_plot,categoria_list, var)
 
-    with col[0]:
-            
-                    
-        st.markdown('#### Trafego Acum') 
-
-        df_plot =  df_view.copy()
-
-        df_plot = df_plot.reset_index(drop = False)
-        df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
-        df_plot = df_plot.set_index('DateHour') 
-        
-
-        if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
-        if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
  
- 
-        dados_x =  df_plot.index
-        dados_y =  df_plot['trafego Acum']
-        dados_y2 =  df_plot['% Conversão Acum'] 
-        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Data", y="Trafego") , height=300, width= 600, markers = True,    line_shape='spline')
-
-        fig 
-
-    with col[1]:
+                if   i + ' - ' + size_name != 'BAC - 5-9 Cxs':
 
 
                     
-        st.markdown('#### Conversão') 
-        fig=py.line(x=dados_x, y=dados_y2, height=300, width= 600, markers = True,    line_shape='spline')
-        fig
-        #  labels=dict(x="Data", y="% Conversão") ,
+                    st.markdown("##  " +  nome_var)
+                    st.markdown("##  "  )
 
+                    col = st.columns((2,  8), gap='medium') 
 
-    col = st.columns((2,  2), gap='medium')
+                    with col[0]:
+                                    
+                        df_trend_slope = df_trend_slope.rename(columns = {'Slope 1': 'Slope'})
+                        df_trend_slope
 
-    with col[0]:
+                        df_trend_slope = df_trend_slope.rename(columns = {'Slope': 'Slope ' + i + ' - ' + size_name})
+
+                        if len(df_trend_slope_final) == 0: 
+                            df_trend_slope_final = df_trend_slope.copy()                                
+                        else:
+                            df_trend_slope_final = df_trend_slope_final.merge( df_trend_slope, how='left', left_index=True, right_index=True)  
+                    
+                    with col[1]:
             
-                    
-        st.markdown('#### Gmv Acum') 
+                        plot_trends(df_plot,categoria_filter, var)
 
-        df_plot =  df_view.copy()
 
-        df_plot = df_plot.reset_index(drop = False)
-        df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
-        df_plot = df_plot.set_index('DateHour') 
+        st.markdown("##  Resumo Slopes")
+        st.markdown("##  "  )
         
-
-        if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
-        if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
+        df_trend_slope_final
 
 
-        dados_x =  df_plot.index
-        dados_y =  df_plot['Gmv Acum']
-        dados_y2 =  df_plot['Orders Acum'] 
-        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Data", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
-
-        fig 
-
-    with col[1]:
-
-
-                    
-        st.markdown('#### Pedidos Acum') 
-        fig=py.line(x=dados_x, y=dados_y2,  labels=dict(x="Data", y="Pedidos") , height=300, width= 600, markers = True,    line_shape='spline')
-        fig
-
+   # with Sazonalidade:
+        
+        
+         
+ #      cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['categoria'],['ean'])  
   
+
+
+    # Plot, Slopes = st.tabs(["Plot Trends", "Df Slopes"])
+    # with Plot:
+ 
+
+    # with Slopes:
+         
+    #     df_trend_slope
+ 
+
+    
+    # tab1, tab2 = st.tabs(["Streamlit theme (default)", "Plotly native theme"])
+    # with tab1:
+    #     st.plotly_chart(fig, theme="streamlit")
+    # with tab2:
+    #     st.plotly_chart(fig, theme=None)
+
 with tab2:
      
 
@@ -2289,3 +2619,163 @@ with tab3:
     df_forecast = df_forecast.sort_values(by=['DateHour'], ascending = False)
     df_forecast = df_forecast.apply(lambda x: round(x))
     df_forecast
+
+ 
+ 
+with tab5:
+
+    st.markdown('###### Atualizado em: ' + str(hora_atualizacao_trafego) + ' / Hora Filtrada: ' + str(max_hora_trafego))  
+    
+
+    st.header("Variação Trafego")
+#    st.image("https://static.streamlit.io/examples/cat.jpg", width=200)
+
+    with st.container(): 
+
+       # col = st.columns((9.5,  2), gap='small')
+
+        # with col[0]:
+            
+                    
+        #   st.markdown('#### Variação Tráfego')
+
+        df_view = df_view.sort_values('DateHour',ascending= False)
+                    
+        df_view = df_view[['Date','Hora','trafego Acum', 'Orders Acum','% Conversão Acum', '% Var trafego Acum', '% Var % Conversão Acum' ,'Gmv Acum','Forecast Gmv', '% Var Gmv Acum' , 'Peso Acum',  'Forecast Peso', '% Var Peso Acum']]
+        
+        
+
+            
+        delta_columns = ['% Var trafego Acum','% Var % Conversão Acum'] #,'% Var Gmv Acum' ,   '% Var Peso Acum']
+
+
+    
+    #   for i in delta_columns:
+
+#             df_view[i] = df_view[i].apply(lambda x: f"{x:.2%}")
+    #      df_view[i] = df_view[i].apply(lambda x: '{:.2%}'.format(x))
+        #  df_view[i] = df_view[i].apply(lambda x: float(x.strip('%'))  ) 
+        #  df_view[i] = df_view[i].apply(lambda x: x[4:]  ) 
+        
+#           styled_df = df_view[df_view['Date'] == data_max].style.apply(highlight_negative, subset=delta_columns)
+#           styled_df
+
+        df_style = df_view.copy()
+        df_style = df_style[['Gmv Acum','trafego Acum','Orders Acum','% Conversão Acum','% Var trafego Acum', '% Var % Conversão Acum']]
+
+
+#            df_style  = df_style[df_style['Date'] == data_max] 
+        
+
+        def try_convert(value):
+    
+            try:
+                value = value.rstrip('%')
+                value = float(value) / 100
+                return value
+            except ValueError:
+                return None
+
+        def highlight_negative(s):
+            return ['color: #CD4C46 ' if try_convert(v) < 0 else 'color: #7900F1' for v in s]
+                
+            # Remove the trailing '%' sign (if present)
+#               percent_str = percent_str
+
+            # Convert the string to a float and divide by 100
+#                return float(percent_str) / 100
+#                return 
+
+
+        df_styled = df_style.style\
+                    .apply(highlight_negative, subset=delta_columns)
+
+        df_styled
+
+
+
+
+
+
+
+        # with col[1]:
+
+                
+        #     st.markdown('#### Takeaways')
+        # #     df_trafego_query
+        #     with st.expander('About', expanded=True):
+        #         st.write('''
+        #             - Data: [U.S. Census Bureau](https://www.census.gov/data/datasets/time-series/demo/popest/2010s-state-total.html).
+        #             - :orange[**Gains/Losses**]: states with high inbound/ outbound migration for selected year
+        #             - :orange[**States Migration**]: percentage of states with annual inbound/ outbound migration > 50,000
+        #             ''')
+
+    col = st.columns((2,  2), gap='medium')
+
+    with col[0]:
+            
+                    
+        st.markdown('#### Trafego Acum') 
+
+        df_plot =  df_view.copy()
+
+        df_plot = df_plot.reset_index(drop = False)
+        df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
+        df_plot = df_plot.set_index('DateHour') 
+        
+
+        if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
+        if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
+ 
+ 
+        dados_x =  df_plot.index
+        dados_y =  df_plot['trafego Acum']
+        dados_y2 =  df_plot['% Conversão Acum'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Data", y="Trafego") , height=300, width= 600, markers = True,    line_shape='spline')
+
+        fig 
+
+    with col[1]:
+
+
+                    
+        st.markdown('#### Conversão') 
+        fig=py.line(x=dados_x, y=dados_y2, height=300, width= 600, markers = True,    line_shape='spline')
+        fig
+        #  labels=dict(x="Data", y="% Conversão") ,
+
+
+    col = st.columns((2,  2), gap='medium')
+
+    with col[0]:
+            
+                    
+        st.markdown('#### Gmv Acum') 
+
+        df_plot =  df_view.copy()
+
+        df_plot = df_plot.reset_index(drop = False)
+        df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
+        df_plot = df_plot.set_index('DateHour') 
+        
+
+        if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
+        if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
+
+
+        dados_x =  df_plot.index
+        dados_y =  df_plot['Gmv Acum']
+        dados_y2 =  df_plot['Orders Acum'] 
+        fig=py.line(x=dados_x, y=dados_y,  labels=dict(x="Data", y="Gmv") , height=300, width= 600, markers = True,    line_shape='spline')
+
+        fig 
+
+    with col[1]:
+
+
+                    
+        st.markdown('#### Pedidos Acum') 
+        fig=py.line(x=dados_x, y=dados_y2,  labels=dict(x="Data", y="Pedidos") , height=300, width= 600, markers = True,    line_shape='spline')
+        fig
+
+# %%
