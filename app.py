@@ -1,8 +1,7 @@
 # %%  Imports
 import time 
 import plotly.express as px 
- 
-from sklearn.linear_model import LinearRegression
+  
 from datetime import timedelta
 import streamlit as st
 import altair as alt
@@ -1991,19 +1990,19 @@ with tab1:
             slopeList = df_trend["Trend " + i].tolist()
             slope1 = (slopeList[-1] - slopeList[0]) / (len(slopeList) - 1) 
 
-            X = np.arange(len(slopeList)).reshape(-1, 1)  # Independent variable (time)
-            y = slopeList
-            model = LinearRegression()
-            model.fit(X, y)
-            slope2 = model.coef_[0] 
-            dict_trends = {'Categoria': i, 'Slope 1': slope1, 'Slope 2': slope2}
+            # X = np.arange(len(slopeList)).reshape(-1, 1)  # Independent variable (time)
+            # y = slopeList
+            # model = LinearRegression()
+            # model.fit(X, y)
+            # slope2 = model.coef_[0] 
+            dict_trends = {'Categoria': i, 'Slope 1': slope1}
             trend_list.append(dict_trends) 
             
             df_trend = df_trend.set_index('Data')
             
             df_plot = df_plot.merge(  df_trend[['Trend ' + i]], how='left', left_index=True, right_index=True)  
             
-            df_trend_slope = pd.DataFrame(trend_list)[['Categoria','Slope 1','Slope 2']].sort_values('Slope 1', ascending = True)
+            df_trend_slope = pd.DataFrame(trend_list)[['Categoria','Slope 1']].sort_values('Slope 1', ascending = True)
             
             df_trend_slope  = df_trend_slope.set_index('Categoria')[['Slope 1']]
 
