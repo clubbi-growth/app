@@ -1,8 +1,6 @@
 # %%  Imports
 import time 
-import plotly.express as px
-import prophet
-from prophet.plot import plot_plotly, plot_components_plotly  
+import plotly.express as px 
  
 from sklearn.linear_model import LinearRegression
 from datetime import timedelta
