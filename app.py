@@ -15,8 +15,7 @@ from PIL import Image
 import redshift_connector
 import mysql.connector as connection
 import datetime
-import numpy as np  
-from statsmodels.tsa.seasonal import STL
+import numpy as np   
   
 
 # %% Data Atual
