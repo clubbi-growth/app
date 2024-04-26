@@ -558,7 +558,7 @@ query_trafego_produtos_d_1 =  '''select  date_trunc('day', event_date::date )::d
 query_trafego_produtos_d0 =  '''select  date_trunc('day', event_date::date )::date as datas, date_trunc('hour',(TIMESTAMP 'epoch' + event_timestamp / 1000000 * INTERVAL '1 second')::timestamptz  - interval '3 hour') as datetimes, extract(hour from datetimes) as hora, event_user_id as user_id,  event_ean, count(distinct case when event_name = 'searchProducts' then event_user_id else null end) as search_products, count(distinct case when event_name = 'addToCart' then event_user_id else null end) as add_to_cart, count(distinct case when event_name = 'checkout' then event_user_id else null end) as checkout FROM ga4.events_data_intraday where event_ean in ('7891910000197','7891107101621','7896894900013','7896036090244','7896109801005','7896079500151','7896183202187','7898080640611','7898080640611','7896079500151','7891149104109','7898215151708','7896256600223','7896223709423','7896183202187','7893500020110','7898215151708','7896401100097','7896089011982','7896089012019','7896332007380','7898080640413','7891149011001','7896332007359','7898915949193','7896024761651','78936683','7896401100332','7896024760357','7898215151784','7622210565563','7891991009164','7898080640222','7891149440801','7894321722016','7891149102808','7891021006125','7891000100103','7891152802054','7896046900236','7894900027020','7894900027013','78912939','7896081800010','7896024722324','7898215157403') group by 1,2,3,4,5  '''
 
 
-@st.cache_resource()
+@st.cache_resource( ttl = 43200) 
 def load_trafego_produtos_d_1():
     cursor = load_redshift()
     cursor.execute(query_trafego_produtos_d_1)
@@ -978,7 +978,7 @@ def cria_df_view_categoria(df_datetime,df_users, df_trafego,df_orders,min_date,m
     if hora_list[0] != 'Hora': df_vendas = df_vendas[df_vendas['Hora'].isin(hora_list)] 
     
     return df_vendas 
- 
+  
 def cria_df_view_categoria2(df_datetime,df_users, df_trafego,df_orders,min_date,max_date,weekday_list,hora_list, region_id_list,regiao_list,size_list,categoria_list,ean_lista):
      
     df_datetime = df_datetime[df_datetime['DateHour']>=  min_date ]
@@ -1123,12 +1123,9 @@ def cria_df_view_categoria2(df_datetime,df_users, df_trafego,df_orders,min_date,
     df_lags = df_lags.reset_index(drop = False)
     df_lags =  df_lags.merge( df_gmv_dia,how ='left', left_on='Data', right_on='Data', suffixes=(False, False))
     df_lags =  df_lags.set_index('DateHour')
-    
     df_lags['% Share Gmv'] = df_lags['Gmv Acum']/ df_lags['Gmv Dia']
     df_lags['% Share Peso'] = df_lags['Peso Acum']/ df_lags['Peso Dia']
     
-    df_lags = df_lags[['Data','Gmv Acum','Peso Acum','% Share Gmv','% Share Peso']]
-
     # for i in range(1, len(df_lags.columns) ): 
 
     #     coluna = df_lags.columns[i]
@@ -1161,16 +1158,14 @@ def cria_df_view_categoria2(df_datetime,df_users, df_trafego,df_orders,min_date,
     #     df_lags[lag_var] = (df_lags[coluna]/ df_lags[lag_media] -1)
     #     df_lags[lag_var] = df_lags[lag_var].apply(lambda x: f"{x * 100:.2f}%")
      
-        
-
-
+         
 
     # df_lags['Forecast Gmv'] =  df_lags['Gmv Acum'] /  df_lags['% Share Gmv Lag Mean 7/14/21/28'] 
     # df_lags['Forecast Peso'] =  df_lags['Peso Acum'] /  df_lags['% Share Peso Lag Mean 7/14/21/28'] 
         
 
-    # df_lags['% Conversão Search'] = df_lags['% Conversão Search'].apply(lambda x: f"{x * 100:.2f}%")
-    # df_lags['% Conversão Search Acum'] = df_lags['% Conversão Search Acum'].apply(lambda x: f"{x * 100:.2f}%")
+    df_lags['% Conversão Search'] = df_lags['% Conversão Search'].apply(lambda x: f"{x * 100:.2f}%")
+    df_lags['% Conversão Search Acum'] = df_lags['% Conversão Search Acum'].apply(lambda x: f"{x * 100:.2f}%")
     df_vendas =  df_vendas[['Hora','Positivação Categoria','Positivação Geral']].merge(  df_lags.drop(columns = 'Data'), how='left', left_index=True, right_index=True)   
  
   
@@ -1188,9 +1183,7 @@ def cria_df_view_categoria2(df_datetime,df_users, df_trafego,df_orders,min_date,
     if hora_list[0] != 'Hora': df_vendas = df_vendas[df_vendas['Hora'].isin(hora_list)] 
     
     return df_vendas 
- 
- 
-
+  
 
 
 # top_skus_atual = df_orders[df_orders['Categoria'] == 'Leite' ][df_orders['unit_ean_prod'].isin(top_skus)]['unit_ean_prod'].unique().tolist()
@@ -1321,43 +1314,21 @@ def df_categorias():
     df_RJ_1_4 = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['categoria'],['ean'])  
     df_RJ_5_9 = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['5-9 Cxs'],['categoria'],['ean'])  
     df_BAC = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['BAC'],['1-4 Cxs'],['categoria'],['ean'])  
-    df_Leite = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Leite'],['ean']) 
-    df_Acucar = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Açúcar e Adoçante'],['ean']) 
-    df_Biscoitos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Biscoitos'],['ean']) 
-    df_Arroz_Feijao = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Arroz e Feijão'],['ean']) 
-    df_Derivados_Leite = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Derivados de Leite'],['ean']) 
-    df_Oleos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Óleos, Azeites e Vinagres'],['ean']) 
-    df_Cafe = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Cafés, Chás e Achocolatados'],['ean']) 
-    df_Massas = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Massas Secas'],['ean']) 
-    df_Cervejas = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Cervejas'],['ean']) 
-    df_Sucos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Sucos E Refrescos'],['ean']) 
-    df_Refrigerantes = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Refrigerantes'],['ean']) 
-    df_Limpeza = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Limpeza de Roupa'],['ean']) 
-    df_Chocolates = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Chocolates'],['ean']) 
-    df_Graos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Grãos e Farináceos'],['ean']) 
+    df_Leite = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Leite'],['ean']) 
+    df_Acucar = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Açúcar e Adoçante'],['ean']) 
+    df_Biscoitos = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Biscoitos'],['ean']) 
+    df_Arroz_Feijao = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Arroz e Feijão'],['ean']) 
+    df_Derivados_Leite = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Derivados de Leite'],['ean']) 
+    df_Oleos = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Óleos, Azeites e Vinagres'],['ean']) 
+    df_Cafe = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Cafés, Chás e Achocolatados'],['ean']) 
+    df_Massas = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Massas Secas'],['ean']) 
+    df_Cervejas = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Cervejas'],['ean']) 
+    df_Sucos = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Sucos E Refrescos'],['ean']) 
+    df_Refrigerantes = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Refrigerantes'],['ean']) 
+    df_Limpeza = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Limpeza de Roupa'],['ean']) 
+    df_Chocolates = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Chocolates'],['ean']) 
+    df_Graos = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['Grãos e Farináceos'],['ean']) 
 
-
-
-
-    # df_RJ = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['categoria'],['ean'])  
-    # df_RJ_1_4 = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['categoria'],['ean'])  
-    # df_RJ_5_9 = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['5-9 Cxs'],['categoria'],['ean'])  
-    # df_BAC = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['BAC'],size_list,['categoria'],['ean'])  
-    # df_Leite = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Leite'],['ean']) 
-    # df_Acucar = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Açúcar e Adoçante'],['ean']) 
-    # df_Biscoitos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Biscoitos'],['ean']) 
-    # df_Arroz_Feijao = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Arroz e Feijão'],['ean']) 
-    # df_Derivados_Leite = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Derivados de Leite'],['ean']) 
-    # df_Oleos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Óleos, Azeites e Vinagres'],['ean']) 
-    # df_Cafe = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Cafés, Chás e Achocolatados'],['ean']) 
-    # df_Massas = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Massas Secas'],['ean']) 
-    # df_Cervejas = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Cervejas'],['ean']) 
-    # df_Sucos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Sucos E Refrescos'],['ean']) 
-    # df_Refrigerantes = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Refrigerantes'],['ean']) 
-    # df_Limpeza = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Limpeza de Roupa'],['ean']) 
-    # df_Chocolates = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Chocolates'],['ean']) 
-    # df_Graos = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['Grãos e Farináceos'],['ean']) 
- 
 
 
  
@@ -1440,7 +1411,7 @@ dicts = {}
 name_list = []
 list_dicts = []
 
-regional_list =  ['RJC', 'BAC'] 
+regional_list =  ['RJC'] 
 size_list = ['size','1-4 Cxs','5-9 Cxs']    
  
 
@@ -1463,7 +1434,7 @@ def categorias2():
                 print('')
 
                 try:
-                    df = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  [region ],[size],[categoria],['ean']) 
+                    df = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  [region ],[size],[categoria],['ean']) 
                     df['Categoria'] = categoria
                     df['Region'] = region 
                     df['Size'] = size
@@ -1890,7 +1861,7 @@ with tab0:
                             st.markdown('##### ' + produto )                            
                                 
                                             
-                            df_prod = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['categoria'],[top_skus_atual[k]]) 
+                            df_prod = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['categoria'],[top_skus_atual[k]]) 
                                 
 
                             df_plot =  df_prod.copy()   
