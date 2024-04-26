@@ -2058,11 +2058,7 @@ with tab1:
                 else: size_name = s 
 
                 nome_var =  i + ' - ' + size_name + ' - Trend ' + var  
-
-                st.text(nome_var)
-                if nome_var == 'RJI - Geral - Trend Positivação Categoria':
-                    df_categorias2
-                    df_plot
+ 
 
                 df_plot, df_trend_slope ,var = df_plot_trend(df_plot,categoria_list, var)
 
