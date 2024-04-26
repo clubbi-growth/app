@@ -1411,7 +1411,7 @@ dicts = {}
 name_list = []
 list_dicts = []
 
-regional_list =  ['RJC'] 
+regional_list =  ['RJC','RJI','BAC']
 size_list = ['size','1-4 Cxs','5-9 Cxs']    
  
 
@@ -2059,7 +2059,10 @@ with tab1:
 
                 nome_var =  i + ' - ' + size_name + ' - Trend ' + var  
 
-                
+                st.text(nome_var)
+                if nome_var == 'RJI - Geral - Trend Positivação Categoria':
+                    df_categorias2
+                    df_plot
 
                 df_plot, df_trend_slope ,var = df_plot_trend(df_plot,categoria_list, var)
 
