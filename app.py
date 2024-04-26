@@ -17,6 +17,7 @@ import mysql.connector as connection
 import datetime
 import numpy as np   
   
+from statsmodels.tsa.seasonal import STL
 
 # %% Data Atual
 # Data Atual 
