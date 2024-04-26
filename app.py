@@ -1504,16 +1504,16 @@ with st.sidebar:
 
     # regiao_list= st.multiselect("Região:", regiao_list )
     # region_id_list= st.multiselect("Region Id:", region_list )
-    #weekday_list= st.multiselect("Dia da Semana:", weekday_list, default= data_atual.weekday() )
-    #hora_list= st.multiselect("Hora:", hora_list, default  = max_hora_orders )
+    weekday_list= st.multiselect("Dia da Semana:", weekday_list, default= data_atual.weekday() )
+    hora_list= st.multiselect("Hora:", hora_list, default  = max_hora_orders )
     # size_list= st.multiselect("Tipo:", size_list )
 
 
 
     # if len(regiao_list)== 0: regiao_list=['Região']
     # if len(region_id_list)== 0: region_id_list=['region_id']
-    #if len(weekday_list)== 0: weekday_list=['Weekday']
-   # if len(hora_list)== 0: hora_list=['Hora']
+    if len(weekday_list)== 0: weekday_list=['Weekday']
+    if len(hora_list)== 0: hora_list=['Hora']
     # if len(size_list)== 0: size_list=['size']
 
         
