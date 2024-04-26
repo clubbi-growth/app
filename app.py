@@ -15,7 +15,8 @@ from PIL import Image
 import redshift_connector
 import mysql.connector as connection
 import datetime
-import numpy as np   
+import numpy as np  
+from statsmodels.tsa.seasonal import STL
   
 
 # %% Data Atual
@@ -1915,7 +1916,7 @@ with tab0:
 
 
     print(df_categorias_final.columns.to_list())
-    df_categoria_historico = df_categorias_final[['Categoria','Gmv Acum','Gmv Acum Lag Mean 7/14/21/28','% Var Gmv Acum','Positivação Categoria','Positivação Geral','search_products Acum','add_to_cart Acum']]
+    df_categoria_historico = df_categorias_final[['Categoria','Gmv Acum','Positivação Categoria','Positivação Geral']]
     df_categoria_historico = df_categoria_historico.sort_values( by = ['DateHour','Gmv Acum'] , ascending=[False,False])
     df_categoria_historico
 
