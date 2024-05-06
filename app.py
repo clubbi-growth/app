@@ -539,5 +539,11 @@ def load_produtos_previsao():
 df_produtos_previsao = load_produtos_previsao()
  
 df_produtos_previsao = df_produtos_previsao.rename(columns={'ean':'unit_ean_prod','description':'Unit_Description'})[['unit_ean_prod','Unit_Description','Categoria']]  
- 
+
+
+
+@st.cache_resource( ttl = 45000) 
+def load_orders_previsao():
+    mydb = load_my_sql() 
+    query_orders = pd.read_sql(query_order_previsao,mydb)  
  
