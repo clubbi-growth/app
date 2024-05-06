@@ -228,4 +228,25 @@ print(f"Data: {data_formatada}")
 print(f"Hora: {hora_formatada}") 
 
 
+# %% Query Concorrência
+# Query Concorrencia
+print("Query  Concorrencia") 
+
+query_conc =  '''select * from public.concorrencia_python '''
+
+
+@st.cache_resource( ttl = 43200) 
+def load_concorrencia():
+    cursor = load_redshift()
+    cursor.execute(query_conc)
+    query_concorrencia: pd.DataFrame = cursor.fetch_dataframe() 
+    query_concorrencia['data'] = pd.to_datetime(query_concorrencia['data'])
+    query_concorrencia.sort_values('data',ascending=True )
+    query_concorrencia['ean'] = query_concorrencia['ean'].astype(str) 
+    
+    return query_concorrencia
+
+query_concorrencia = load_concorrencia()
+ 
+query_concorrencia
  
