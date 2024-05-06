@@ -539,38 +539,5 @@ def load_produtos_previsao():
 df_produtos_previsao = load_produtos_previsao()
  
 df_produtos_previsao = df_produtos_previsao.rename(columns={'ean':'unit_ean_prod','description':'Unit_Description'})[['unit_ean_prod','Unit_Description','Categoria']]  
-
-@st.cache_resource( ttl = 45000) 
-def load_orders_previsao():
-    mydb = load_my_sql() 
-    query_orders = pd.read_sql(query_order_previsao,mydb)  
-        
-    df_produtos = load_produtos_previsao()
  
-    df_inicial = query_orders.copy()
-
-    df_inicial['Quantity'] = df_inicial['Quantity'].replace(np.nan,0)
-    df_inicial = df_inicial[df_inicial['Quantity'] > 0]
-
-    df_inicial['ean'] = df_inicial['ean'].astype(np.int64).astype(str) 
-    df_inicial['unit_ean'] = df_inicial['unit_ean'].astype(np.int64).astype(str) 
-    
-
-    df_inicial = df_inicial.drop(columns = ['Categoria'])
-
-    
-    df_produtos = df_produtos.copy()
-    df_produtos['ean'] = df_produtos['ean'].astype(np.int64).astype(str)
-    df_produtos = df_produtos.rename(columns={'ean':'unit_ean_prod','description':'Unit_Description'})[['unit_ean_prod','Unit_Description','Categoria']]  
-
-
-
-    df_inicial = df_inicial.merge(df_produtos  ,how ='left', left_on='unit_ean', right_on='unit_ean_prod', suffixes=(False, False))
-    df_inicial['Categoria'] =   np.where((df_inicial['Categoria'] == 'Óleos, Azeites e Vinagres') ,  'Óleos, Azeites E Vinagres'  , df_inicial['Categoria'] )
-    df_inicial['price_managers'] = df_inicial['price_managers'].replace(np.nan, 0 )
-    df_inicial['offer_id'] = df_inicial['offer_id'].replace(np.nan, 0 ).astype(np.int64).astype(float)
- 
-    return df_inicial
-
-df_order_previsao = load_orders_previsao()
  
