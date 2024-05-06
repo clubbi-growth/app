@@ -546,4 +546,7 @@ df_produtos_previsao = df_produtos_previsao.rename(columns={'ean':'unit_ean_prod
 def load_orders_previsao():
     mydb = load_my_sql() 
     query_orders = pd.read_sql(query_order_previsao,mydb)  
- 
+    df_inicial = query_orders.copy()
+    return df_inicial
+
+df_order_previsao = load_orders_previsao()
