@@ -203,4 +203,29 @@ print(f"Hora: {hora_formatada}")
  
 
 
+
+# %% Query Produtos 
+# Query Produtos
+print("Query Produtos - df_produtos")
+
+query_produtos  = "select convert(prod.ean,char) as ean ,prod.description,prod.category_id, prod.unit_ean, prod.only_sell_package, cat.category as Categoria, cat.section  from clubbi.product prod left join clubbi.category cat on cat.id = prod.category_id ;"
+
+
+@st.cache_resource( ttl = 43200) 
+def load_produtos():
+    mydb = load_my_sql()
+    data = pd.read_sql(query_produtos,mydb) 
+    return data
+
+ 
+
+data_atual = datetime.date.today()
+hora_atual = datetime.datetime.now() 
+
+data_formatada = data_atual.strftime('%d/%m/%Y')
+hora_formatada = hora_atual.strftime('%H:%M:%S')
+print(f"Data: {data_formatada}")
+print(f"Hora: {hora_formatada}") 
+
+
  
