@@ -522,6 +522,7 @@ left join  clubbi.merchants  cli on cli.client_site_code = ord.customer_id \
 left join clubbi.category_volume cat ON prod.category_id = cat.category_id  \
 where    \
 1 = 1 \
+and DATE(ord.order_datetime) >= '2022-01-01' \
 and DATE(ord.order_datetime) <  CURDATE()  \
 ;"\
 
