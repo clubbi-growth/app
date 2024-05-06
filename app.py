@@ -106,6 +106,7 @@ print('My Sql')
 
 #@st.cache_resource(ttl = 1)  
 #@st.cache_resource()  
+@st.cache_resource( ttl = 600)  
 def load_my_sql():
     mydb =  connection.connect(
         host="aurora-mysql-db.cluster-ro-cjcocankcwqi.us-east-1.rds.amazonaws.com",
@@ -131,6 +132,7 @@ print('Redshit')
 
 
 #@st.cache_resource( ttl = 600)  
+@st.cache_resource( ttl = 600)  
 def load_redshift():
     conn = redshift_connector.connect(
         host='redshift-analytics-cluster-1.c8ccslr41yjs.us-east-1.redshift.amazonaws.com',
