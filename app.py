@@ -1503,7 +1503,7 @@ dicts = {}
 name_list = []
 list_dicts = []
 
-regional_list =  ['RJC','RJI','BAC']
+regional_list =  ['RJC']#,'RJI','BAC']
 size_list = ['size','1-4 Cxs','5-9 Cxs']    
  
 
