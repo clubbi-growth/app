@@ -181,7 +181,7 @@ left join clubbi.region_supplier rs on rs.supplier_id = s.id \
 left join clubbi.category cat on cat.id = p.category_id \
 where \
 o.is_ofertao = 1 \
-and DATE(o.date_start) >= '2022-01-01' \
+and DATE(o.date_start) >= '2023-01-01' \
 and DATE(o.date_start) < '2025-01-01' \
 ;"\
 
