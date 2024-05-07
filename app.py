@@ -1648,10 +1648,10 @@ with tab0:
     if len (df_categorias2[df_categorias2['Date'] == datetime.date.today() ]) >0 :
             
         date_ref = datetime.date.today()  
-        date_ref = date_ref.date
+        date_ref = date_ref.strftime('%Y-%m-%d') 
     else: 
         date_ref = datetime.date.today()    - pd.offsets.Day(1) 
-        date_ref = date_ref.date
+        date_ref = date_ref.strftime('%Y-%m-%d') 
 
     df_categorias2 = df_categorias2.sort_index(ascending=False) 
     
