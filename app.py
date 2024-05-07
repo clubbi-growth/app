@@ -1641,367 +1641,29 @@ button_count = 0
 
 # %% Categorias 
 
-with tab0:
- 
+with tab0: 
+
+    df_categorias2['Date'] = df_categorias2.index.date
+
+    if len (df_categorias2[df_categorias2['Date'] == datetime.date.today() ]) >0 :
+            
+        date_ref = datetime.date.today()  
+        date_ref = date_ref.date()
+    else: 
+        date_ref = datetime.date.today()    - pd.offsets.Day(1) 
+        date_ref = date_ref.date()
+
+    df_categorias2 = df_categorias2.sort_index(ascending=False) 
     
- 
-
-    # for key, value in cached_data.items():
-
-    #     df_count = df_count + 1 
- 
-    #     if df_count == 1:
-
-    #         st.markdown('#### ' + cached_data[key]['Categoria'].unique()[0])  
-
-    #         df_plot =  cached_data[key].copy()   
-    #         df_plot = df_plot.reset_index(drop = False)
-    #         df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
-    #         df_plot = df_plot.set_index('DateHour') 
-
- 
-
-    #         df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
-    #         df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
-
-    #         if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
-    #         if hora_list[0] != 'Hora': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
-
- 
-    #         dados_x =  df_plot.index
-    #         dados_y1 =  df_plot['Positivação Categoria']
-    #         dados_y2 =  df_plot['Gmv Acum'] 
-
-    #         df_plot_forecast = df_plot[df_plot.index >= pd.Timestamp(data_min) +  pd.offsets.Day(30)]
-    #         dados_x_forecast =  df_plot_forecast.index
-    #         dados_y3 = df_plot_forecast['Forecast Gmv'] 
-             
-    #         col = st.columns((2,  2, 2), gap='medium')
-
-    #         with col[0]:
-                
-    #             fig=py.line(x=dados_x, y=dados_y1,   title = 'Positivação' ,  labels=dict(y="Positivação" , x="Data") , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #             fig 
-
-    #         with col[1]:
-                
-    #             fig=py.line(x=dados_x, y=dados_y2,   title = 'Gmv' ,  labels=dict(y="Gmv Acum", x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #             fig      
-            
-    #         with col[2]:
-                
-    #             fig=py.line(x=dados_x_forecast, y=dados_y3,  title = 'Forecast Gmv' ,  labels=dict(y="Forecast Gmv" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #             fig        
-
-
-    #         with st.expander('Detalhes', expanded= False):
-    #             st.markdown('#### ' + cached_data["df_RJ_1_4"]['Categoria'].unique()[0])  
-
-            
-    #             df_plot =  cached_data['df_RJ_1_4'].copy()   
-    #             df_plot = df_plot.reset_index(drop = False)
-    #             df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
-    #             df_plot = df_plot.set_index('DateHour') 
-
-    #             df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
-    #             df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
-
-    #             if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
-    #             if hora_list[0] != 'Hora': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
- 
-    #             dados_x =  df_plot.index
-    #             dados_y1 =  df_plot['Positivação Categoria']
-    #             dados_y2 =  df_plot['Gmv Acum'] 
-
-    #             df_plot_forecast = df_plot[df_plot.index >= pd.Timestamp(data_min) +  pd.offsets.Day(30)]
-    #             dados_x_forecast =  df_plot_forecast.index
-    #             dados_y3 = df_plot_forecast['Forecast Gmv'] 
-                
-                
-    #             col = st.columns((2,  2, 2), gap='medium')
-
-    #             with col[0]:
-                    
-    #                 fig=py.line(x=dados_x, y=dados_y1,   title = 'Positivação' ,  labels=dict(y="Positivação", x="Data", ) , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #                 fig 
-
-    #             with col[1]:
-                    
-    #                 fig=py.line(x=dados_x, y=dados_y2,   title = 'Gmv' ,  labels=dict(y="Gmv Acum", x="Hora") , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #                 fig      
-                
-    #             with col[2]:
-                    
-    #                 fig=py.line(x=dados_x_forecast, y=dados_y3,  title = 'Forecast Gmv' ,  labels=dict(x="Data", y="Forecast Gmv") , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #                 fig      
-
-    #             st.markdown('#### ' + cached_data["df_RJ_5_9"]['Categoria'].unique()[0])  
-
-    #             df_plot =  cached_data['df_RJ_5_9'].copy()   
-    #             df_plot = df_plot.reset_index(drop = False)
-    #             df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
-    #             df_plot = df_plot.set_index('DateHour') 
-
-    #             if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
-    #             if hora_list[0] != 'Hora': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
-    #             df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
-    #             df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
-
-
-    #             #df_plot = df_plot[df_plot['Hora'] == max_hora_orders]
-    #             dados_x =  df_plot.index
-    #             dados_y1 =  df_plot['Positivação Categoria']
-    #             dados_y2 =  df_plot['Gmv Acum'] 
-
-    #             df_plot_forecast = df_plot[df_plot.index >= pd.Timestamp(data_min) +  pd.offsets.Day(30)]
-    #             dados_x_forecast =  df_plot_forecast.index
-    #             dados_y3 = df_plot_forecast['Forecast Gmv']  
-                
-    #             col = st.columns((2,  2, 2), gap='medium')
-
-
-
-    #             with col[0]:
-                    
-    #                 fig=py.line(x=dados_x, y=dados_y1,   title = 'Positivação' ,  labels=dict(y="Positivação", x="Data") , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #                 fig 
-
-    #             with col[1]:
-                    
-    #                 fig=py.line(x=dados_x, y=dados_y2,   title = 'Gmv' ,  labels=dict(y="Gmv Acum" , x="Hora" ) , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #                 fig      
-                
-    #             with col[2]:
-                    
-    #                 fig=py.line(x=dados_x_forecast, y=dados_y3,  title = 'Forecast Gmv' ,  labels=dict(y="Forecast Gmv" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #                 fig      
-
-  
-    #     elif df_count == 4:
-    #         st.markdown('#### ' + cached_data[key]['Categoria'].unique()[0])  
-
-    #         df_plot =  cached_data[key].copy()   
-    #         df_plot = df_plot.reset_index(drop = False)
-    #         df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
-    #         df_plot = df_plot.set_index('DateHour') 
-
-    #         if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
-    #         if hora_list[0] != 'Hora': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
-    #         df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
-    #         df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
-
-
-    #        # df_plot = df_plot[df_plot['Hora'] == max_hora_orders]
-    #         dados_x =  df_plot.index
-    #         dados_y1 =  df_plot['Positivação Categoria']
-    #         dados_y2 =  df_plot['Gmv Acum'] 
-
-    #         df_plot_forecast = df_plot[df_plot.index >= pd.Timestamp(data_min) +  pd.offsets.Day(30)]
-    #         dados_x_forecast =  df_plot_forecast.index
-    #         dados_y3 = df_plot_forecast['Forecast Gmv'] 
-            
-            
-    #         col = st.columns((2,  2, 2), gap='medium')
-
-    #         with col[0]:
-                
-    #             fig=py.line(x=dados_x, y=dados_y1,   title = 'Positivação' ,  labels=dict(y="Positivação Categoria" , x="Data") , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #             fig 
-
-    #         with col[1]:
-                
-    #             fig=py.line(x=dados_x, y=dados_y2,   title = 'Gmv' ,  labels=dict(y="Gmv Acum" , x="Hora") , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #             fig      
-            
-    #         with col[2]:
-                
-    #             fig=py.line(x=dados_x_forecast, y=dados_y3,  title = 'Forecast Gmv' ,  labels=dict(y="Forecast Gmv" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #             fig        
-
-
-         
-    #     elif df_count >= 5 : 
-            
-    #         if df_count==5: st.header("Categoria")   
-
-    #         st.markdown('#### ' + cached_data[key]['Categoria'].unique()[0])  
-    #         col = st.columns((2,  2, 2), gap='medium')
-    #         with col[0]:
-                
-                            
-    #             df_plot =  cached_data[key].copy()   
-    #             df_plot = df_plot.reset_index(drop = False)
-    #             df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
-    #             df_plot = df_plot.set_index('DateHour') 
-
-    #             if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
-
-    #             if hora_list[0] != 'Hora': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
-
-
-    #             df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
-    #             df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
-    #            # df_plot = df_plot[df_plot['Hora'] == max_hora_orders]
-    #             dados_x =  df_plot.index
- 
-    #             dados_y =  df_plot['Positivação Categoria']
-    #             dados_y2 =  df_plot['% Positivação Categoria'] 
-    #             dados_y3 =  df_plot['Gmv Acum'] 
-    #             fig=py.line(x=dados_x, y=dados_y,   title = 'Positivação Categoria' ,  labels=dict(y="Positivação", x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #             fig 
-
-    #         with col[1]:
-                
-    #             fig=py.line(x=dados_x, y=dados_y3,   title = 'Gmv' ,  labels=dict(y="Gmv Acum" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #             fig     
-            
-    #         with col[2]:
-                
-    #             fig=py.line(x=dados_x, y=dados_y2,  title = '% Positivação Categoria' ,  labels=dict(y="% Positivação" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #             fig        
+    hora_atual = df_categorias2[df_categorias2['Date'] == date_ref ]['Hora'].max() -1 
     
-  
-    #         # with st.expander('Detalhes', expanded= False):
+    
 
-    #         #     var = 10 
-
-
-    #             # st.markdown('#### Métricas Tráfego Categoria' )   
-
- 
-    #             # col = st.columns((2,  2), gap='medium')
-    #             # with col[0]:
-                    
-                                
-    #             #     df_plot =  cached_data[key].copy()
-    #             #     df_plot = df_plot.reset_index(drop = False)
-    #             #     df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
-    #             #     df_plot = df_plot.set_index('DateHour') 
-        
-
-    #             #     if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
-    #             #     if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
-
-    #             #     df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
-    #             #     df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
-    #             #     #df_plot = df_plot[df_plot['Hora'] == max_hora_trafego]
-            
-                    
-    #             #     dados_x =  df_plot.index 
-    #             #     dados_y =  df_plot['search_products Acum']
-    #             #     dados_y2 =  df_plot['% Conversão Search Acum'] 
-    #             #     fig=py.line(x=dados_x, y=dados_y,   title = 'Search Products' ,  labels=dict(y="Search Product", x="Data" ) , height=300, width= 500, markers = True,    line_shape='spline')
-
-    #             #     fig 
-
-    #             # with col[1]:
-                    
-    #             #     fig=py.line(x=dados_x, y=dados_y2,  title = '% Conversão Search Acum' ,  labels=dict(y="% Conversão Search Acum" , x="Hora") , height=300, width= 500, markers = True,    line_shape='spline')
-
-    #             #     fig     
-
-                
-
-    #         categoria_atual = cached_data[key]['Categoria'].unique()[0]     
-
-    #         for key in buttons_dic:
-
-                  
-
-    #             if key == 'Produtos ' + categoria_atual: 
-                
-                    
-    #                 buttons_dic[key] = st.checkbox('Detalhe ' + key)
-                    
-                    
-    #                 if buttons_dic[key]:  
-
-                            
-    #                     st.markdown('#### Métricas Top Skus' )  
-                        
-    #                     st.markdown('#### ' )  
+    if hora_atual <=7   :
+        hora_atual = 23
 
 
-    #                     top_skus_atual = df_orders[df_orders['Categoria'] == categoria_atual ][df_orders['unit_ean_prod'].isin(top_skus)]['unit_ean_prod'].unique().tolist()
-                            
-    #                     for k in range(0,len(top_skus_atual)):
-
-    #                         produto = df_orders[df_orders['Categoria'] == categoria_atual ][df_orders['unit_ean_prod'] == top_skus_atual[k]]['Produtos'].unique()[0]
-    #                         ean_prod = df_orders[df_orders['Categoria'] == categoria_atual ][df_orders['unit_ean_prod'] == top_skus_atual[k]]['unit_ean_prod'].unique()[0]
-    #                         st.markdown('##### ' + produto )                            
-                                
-                                            
-    #                         df_prod = cria_df_view_categoria2(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2024-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],size_list,['categoria'],[top_skus_atual[k]]) 
-                                
-
-    #                         df_plot =  df_prod.copy()   
-    #                         df_plot = df_plot.reset_index(drop = False)
-    #                         df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
-    #                         df_plot = df_plot.set_index('DateHour')  
-
-    #                         col = st.columns((2,  2, 2), gap='medium')
-
-    #                         with col[0]:
-                                
-                                            
-    #                             df_plot =  df_prod.copy()   
-    #                             df_plot = df_plot.reset_index(drop = False)
-    #                             df_plot['weekday'] = df_plot['DateHour'].dt.weekday 
-    #                             df_plot = df_plot.set_index('DateHour') 
-                    
-
-    #                             if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['weekday'].isin(weekday_list)]
-    #                             if weekday_list[0] != 'Weekday': df_plot = df_plot[df_plot['Hora'].isin(hora_list)]
-
-
-    #                             df_plot = df_plot[df_plot.index >= pd.Timestamp(data_min)]
-    #                             df_plot = df_plot[df_plot.index <= pd.Timestamp(data_max)] 
-    #                             #  df_plot = df_plot[df_plot['Hora'] == max_hora_orders]
-                                
-    #                             dados_x =  df_plot.index
-    #                             dados_y =  df_plot['Positivação Categoria']
-    #                             dados_y2 =  df_plot['% Share Positivação Categoria'] 
-    #                             dados_y3 =  df_plot['Gmv Acum'] 
-    #                             fig=py.line(x=dados_x, y=dados_y,   title = 'Positivação Categoria' ,  labels=dict(y="Positivação", x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #                             fig 
-
-    #                         with col[1]:
-                                
-    #                             fig=py.line(x=dados_x, y=dados_y3,   title = 'Gmv' ,  labels=dict(y="Gmv Acum" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #                             fig     
-                            
-    #                         with col[2]:
-                                
-    #                             fig=py.line(x=dados_x, y=dados_y2,  title = '% Positivação Categoria' ,  labels=dict(y="% Positivação" , x="Data" ) , height=300, width= 450, markers = True,    line_shape='spline')
-
-    #                             fig    
-
-
-    # st.markdown("###") 
-
-
-
-    hora_atual = df_categorias2[df_categorias2['Date'] == datetime.date.today() ]['Hora'].max() -1 
-
-
-    st.markdown('###### Atualizado em: ' + str(hora_atualizacao) + ' / Hora Filtrada: ' + str(hora_atual))  
+    st.markdown('###### Dados até: ' + str(date_ref) + ' '  + str(hora_atual))  
     
 
 
@@ -2023,7 +1685,7 @@ with tab0:
                 df_plot = df_categorias2.copy() 
                 df_plot = df_plot.reset_index() 
                 df_plot = df_plot.set_index('DateHour')  
-                weekday = datetime.date.today().weekday()
+                weekday = date_ref.weekday()
                 
                 df_plot = df_plot[df_plot['Region']== i ]  
                 df_plot = df_plot[df_plot['Size']== s]   
@@ -2144,7 +1806,7 @@ with tab0:
     df_categoria_final = load_df_categoria_Final()
     df_resumo_categoria = df_categoria_final.copy()
     df_resumo_categoria['Date'] = df_resumo_categoria.index.date
-    df_resumo_categoria =  df_resumo_categoria[df_resumo_categoria['Date'] == datetime.date.today()]
+    df_resumo_categoria =  df_resumo_categoria[df_resumo_categoria['Date'] == date_ref]
     df_resumo_categoria = df_resumo_categoria[['Categoria','Regional','Size','Gmv Acum','Oportunidade Gmv','Positivação Categoria','% Positivação Categoria','% Target Positivação','% Ating Categoria']] 
     df_resumo_categoria = df_resumo_categoria.sort_values('Oportunidade Gmv', ascending = False)
 
@@ -2205,7 +1867,7 @@ with tab0:
             df_plot = df_plot.reset_index() 
             df_plot = df_plot.set_index('DateHour')  
             df_plot['Weekday'] = df_plot.index.weekday
-            weekday = datetime.date.today().weekday()
+            weekday = date_ref.weekday()
             
             df_plot = df_plot[df_plot['Regional']== i ]  
             df_plot = df_plot[df_plot['Size']== s]   
