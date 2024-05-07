@@ -1494,7 +1494,7 @@ print(f"Hora: {hora_formatada}")
 df_top_categorias = df_orders.copy()
 df_top_categorias = df_top_categorias[['Categoria','Gmv']].groupby('Categoria').sum()
 df_top_categorias = df_top_categorias.sort_values('Gmv',ascending = False)
-df_top_categorias = df_top_categorias.head(20)
+df_top_categorias = df_top_categorias.head(15)
 df_top_categorias = df_top_categorias.reset_index()
 categoria_list = df_top_categorias['Categoria'].unique().tolist() 
  
