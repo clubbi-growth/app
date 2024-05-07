@@ -1,4 +1,4 @@
- # %%  Imports
+# %%  Imports
 # Imports
 import time 
 import plotly.express as px 
@@ -1826,23 +1826,22 @@ with tab0:
 
     st.markdown("### ") 
 
-    col = st.columns((2,  2, 8 ), gap='medium')
+ 
 
-    with st.expander('Filtros', expanded= False):
-
-        with st.form(key = "my_forms"):
-         
-            with col[0]:
-                            
-                regional_list =   st.radio('Região', ['RJC', 'RJI','BAC']  )
-
-
-            with col[1]:
-
-                size_list =   st.radio('Size', ['1-4 Cxs','5-9 Cxs' , 'size']  )
+    with st.form(key = "my_forms"):
+        
+        col = st.columns((2,  2, 8 ), gap='medium')
+        with col[0]:
+                        
+            regional_list =   st.radio('Região', ['RJC', 'RJI','BAC']  )
 
 
-            submit_button_categoria = st.form_submit_button(label = "Submit")
+        with col[1]:
+
+            size_list =   st.radio('Size', ['1-4 Cxs','5-9 Cxs' , 'size']  )
+
+
+        submit_button_categoria = st.form_submit_button(label = "Submit")
 
 
 
