@@ -1,4 +1,4 @@
-# %%  Imports
+ # %%  Imports
 # Imports
 import time 
 import plotly.express as px 
@@ -1644,23 +1644,33 @@ button_count = 0
 with tab0: 
 
     df_categorias2['Date'] = df_categorias2.index.date
+ 
 
     if len (df_categorias2[df_categorias2['Date'] == datetime.date.today() ]) >0 :
             
-        date_ref = datetime.date.today()  
-        date_ref = date_ref.strftime('%Y-%m-%d') 
+        date_ref = datetime.date.today()   
     else: 
-        date_ref = datetime.date.today()    - pd.offsets.Day(1) 
-        date_ref = date_ref.strftime('%Y-%m-%d') 
+        date_ref = datetime.date.today()    - pd.offsets.Day(1)  
 
-    df_categorias2 = df_categorias2.sort_index(ascending=False) 
-    
-    hora_atual = df_categorias2[df_categorias2['Date'] == date_ref ]['Hora'].max() -1 
-    
-    
 
-    if hora_atual <=7   :
-        hora_atual = 23
+    hora_atual = df_categorias2[df_categorias2['Date'] == date_ref ]['Hora'].max()
+     
+
+    if hora_atual <=6:
+        
+        date_ref = datetime.date.today()    - pd.offsets.Day(1)  
+        date_ref = str(date_ref)[0:10]
+        date_ref = datetime.datetime.strptime( date_ref , "%Y-%m-%d")
+        
+        date_ref = date_ref.date() 
+        hora_atual = df_categorias2[df_categorias2['Date'] == date_ref ]['Hora'].max()  
+    else:
+        hora_atual = df_categorias2[df_categorias2['Date'] == date_ref ]['Hora'].max()  
+     
+    df_categorias2 = df_categorias2.sort_index(ascending=True) 
+     
+    
+ 
 
 
     st.markdown('###### Dados até: ' + str(date_ref) + ' '  + str(hora_atual))  
@@ -1689,13 +1699,12 @@ with tab0:
                 
                 df_plot = df_plot[df_plot['Region']== i ]  
                 df_plot = df_plot[df_plot['Size']== s]   
-                df_plot = df_plot[df_plot['Weekday']== weekday]   
-        
+                df_plot = df_plot[df_plot['Weekday']== weekday]  
                 categoria_list_loop = df_plot['Categoria'].unique().tolist()
                 
 
                 df_plot = df_plot[['Categoria','Hora','Gmv Acum', 'Positivação Geral', 'Positivação Categoria', '% Positivação Categoria']]
-                
+                 
     
     
 
@@ -1706,7 +1715,7 @@ with tab0:
                     
                     df_categoria_fim = df_categoria[df_categoria['Hora'] == 23]  
                     df_categoria = df_categoria[df_categoria['Hora'] == hora_atual]  
-
+                    
                     
                     df_categoria_fim = df_categoria_fim.drop(columns = ['Categoria','Hora']) 
                     df_categoria = df_categoria.drop(columns = ['Categoria','Hora'])
