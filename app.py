@@ -288,7 +288,7 @@ def load_concorrencia():
 
 query_concorrencia = load_concorrencia()
  
-
+query_concorrencia
  
 
 
@@ -7437,7 +7437,8 @@ with tab1:
                 submit_button = st.form_submit_button(label = "Submit")
          
  
-        regional_list =  ['RJC', 'RJI','BAC']    
+        regional_list =  ['RJC', 'RJI','BAC']   
+        regional_list =  ['RJC']#, 'RJI','BAC']    
         size_list = ['size','1-4 Cxs','5-9 Cxs']   
 
         def rupturas_targets(df_categorias2,regional_list ,size_list,categoria_filters, tipo ): 
