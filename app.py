@@ -288,7 +288,7 @@ def load_concorrencia():
 
 query_concorrencia = load_concorrencia()
  
-query_concorrencia
+ 
  
 
 
