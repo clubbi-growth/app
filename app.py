@@ -425,7 +425,7 @@ def load_orders_d_1():
 
  
 
-@st.cache_resource( ttl = 600) # ttl = 30 Minutos = 60 segundos x 30 = 1800 segundos  
+@st.cache_resource( ttl = 1800) # ttl = 30 Minutos = 60 segundos x 30 = 1800 segundos  
 def orders_final():
     mydb = load_my_sql()
     
@@ -1400,7 +1400,7 @@ max_date = df_view['Date'].max()
 print('Load Categoria')
 
 #@st.cache_resource( ttl = 1600) # ttl = 30 Minutos = 60 segundos x 30 = 1800 segundos   
-@st.cache_resource( ttl = 43200) 
+@st.cache_resource( ttl = 1800) 
 def df_categorias():
 # Load DataFrame 1
     df_RJ = cria_df_view_categoria(df_datetime,df_users, df_trafego_produtos, df_orders,pd.Timestamp('2023-01-01'),pd.Timestamp(date.today()),weekday_list,hora_list,region_list,  ['RJC'],['1-4 Cxs'],['categoria'],['ean'])  
@@ -1469,7 +1469,7 @@ def df_categorias():
     
 cached_data = df_categorias() 
  
-@st.cache_resource( ttl = 1600) # ttl = 30 Minutos = 60 segundos x 30 = 1800 segundos   
+@st.cache_resource( ttl = 1800) # ttl = 30 Minutos = 60 segundos x 30 = 1800 segundos   
 def df_categorias_fim(): 
 
     for key, value in cached_data.items(): 
@@ -1509,7 +1509,7 @@ size_list = ['size','1-4 Cxs','5-9 Cxs']
  
 
 
-@st.cache_resource( ttl = 900000) 
+@st.cache_resource( ttl = 1800) 
 def categorias2(): 
 
     for k in regional_list:
@@ -1674,7 +1674,7 @@ with tab0:
     st.markdown('###### Dados até: ' + str(date_ref) + ' '  + str(hora_atual))  
   
  
-    @st.cache_resource( ttl = 90000) 
+    @st.cache_resource( ttl = 1800) 
     def load_df_categoria_Final():
         regional_list =  ['RJC', 'RJI','BAC']  
         size_list =     ['1-4 Cxs','5-9 Cxs' , 'size']   
@@ -7701,7 +7701,7 @@ with tab1:
         dict_trends_targets_ofertao = {} 
  
 
-        @st.cache_resource( ttl = 1) 
+        @st.cache_resource( ttl = 1800) 
         def load_categoria_target():
            
             dict_trends_targets_geral  = rupturas_targets(df_categorias2,regional_list ,size_list,categoria_list, 'Geral' ) 
